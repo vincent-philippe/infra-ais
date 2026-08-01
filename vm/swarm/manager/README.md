@@ -13,3 +13,9 @@ launch using
 ```
 make init-swarm-manager
 ```
+
+connect using
+
+```
+ssh admin@$(virsh domifaddr swarm-1 | grep 192. | cut -d " " -f 20 | cut -d "/" -f 1)
+```

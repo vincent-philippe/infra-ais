@@ -5,4 +5,4 @@
 
 ### Swarm
 
-[swarm vm](./vm/swarm/manager/README.md)
+[swarm](./vm/swarm/README.md)

@@ -1,0 +1,19 @@
+#cloud-config
+users:
+  - name: admin
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: sudo
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${AUTHORIZED_KEY}
+package_update: true
+packages:
+  - vim
+  - htop
+  - curl
+  - docker.io
+runcmd:
+  - docker swarm join --token ${SWARM_TOKEN}
+  - echo "Swarm initialisé à $(date)" > /var/log/cloud-init.log
+  - docker node ls > /var/log/cloud-init.log
+  - echo "Cloud-init terminé à $(date)" > /var/log/cloud-init.log

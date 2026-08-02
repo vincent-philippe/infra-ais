@@ -5,7 +5,7 @@ users:
     groups: sudo
     shell: /bin/bash
     ssh_authorized_keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFfWoT8pJK0NjHBvC28M+5SyRc+A1Aac57PqNooOkrf6 vincent.philippe18@gmail.com
+      - ${AUTHORIZED_KEY}
 package_update: true
 packages:
   - vim

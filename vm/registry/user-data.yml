@@ -1,0 +1,36 @@
+#cloud-config
+users:
+  - name: admin
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: sudo
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${AUTHORIZED_KEY}
+package_update: true
+packages:
+  - vim
+  - htop
+  - wget
+  - openssl
+  - docker.io
+write_files:
+  - path: /opt/harbor/harbor.yml
+    encoding: b64
+    permissions: '0644'
+    content: |
+      ${HARBOR_CONFIG}
+runcmd:
+  # create data directory to preserve image even though harbor is shutdown
+  - mkdir /data
+  # create certs directory
+  - mkdir -p /opt/harbor/certs
+  # >>>> FOR LAB ONLY (WILL USE A PKI LATER) >>>>
+  - openssl ecparam -name prime256v1 -genkey -noout -out /opt/harbor/certs/server.key
+  - openssl req -new -sha256 -subj "/CN=harbor.horizon.fr" -key /opt/harbor/certs/server.key -out /opt/harbor/certs/server.csr
+  - openssl x509 -req -days 365 -in /opt/harbor/certs/server.csr -signkey /opt/harbor/certs/server.key -out /opt/harbor/certs/server.crt
+  # <<<< FOR LAB ONLY (WILL USE A PKI LATER) <<<<<
+  - wget https://github.com/goharbor/harbor/releases/download/v2.15.2/harbor-offline-installer-v2.15.2.tgz -O /opt/harbor-offline-installer-v2.15.2.tgz
+  - cd /opt && tar xzvf ./harbor-offline-installer-v2.15.2.tgz
+  - echo "Harbor téléchargé et installé à $(date)" >> /var/log/cloud-init.log
+  - cd /opt/harbor && ./install.sh --with-trivy
+  - echo "Harbor est en cours d'exécution $(date)" >> /var/log/cloud-init.log

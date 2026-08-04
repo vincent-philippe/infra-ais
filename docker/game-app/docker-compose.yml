@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: gameapp
+      POSTGRES_PASSWORD: gameapp
+      POSTGRES_DB: gameapp
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    restart: unless-stopped
+
+  app:
+    build: ./app
+    environment:
+      DATABASE_URL: postgres://gameapp:gameapp@db:5432/gameapp
+    networks:
+      - backend
+      - frontend
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:8080"
+    networks:
+      - frontend
+    depends_on:
+      - app
+    restart: unless-stopped
+
+networks:
+  backend:
+  frontend:
+
+volumes:
+  db_data:

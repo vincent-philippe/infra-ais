@@ -1,6 +1,7 @@
 #!/bin/bash
+# This script will export any env variable from the .env to the current script
 
-ENV_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.env"
+ENV_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.env"
 
 if [[ ! -f "$ENV_FILE" ]]; then
     echo "[error] .env file not found at $ENV_FILE"

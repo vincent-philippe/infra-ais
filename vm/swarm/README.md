@@ -15,13 +15,13 @@ Noeud manager du cluster actif swarm
 RAM : 4go
 cpu : 2cpu
 os : [debian 13](https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2)
-disk : 20go (essentiellement pour les logs, les volumes sont externalisés via NFS)
+disk : 20go (essentiellement pour les logs, les volumes sont externalisés via NFS @TODO)
 
 ___
 - Initialize using 
 
 ```
-$ sudo make init-swarm ARGS="--swarm-mode manager --domain-name swarm-1"
+$ sudo make init-swarm-manager ARGS=""
 ```
 
 - Connect using
@@ -46,13 +46,13 @@ Noeud worker du cluster actif swarm, joint automatiquement le swarm, via configu
 RAM : 2go
 cpu : 2cpu
 os : basé sur [debian 13](https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2)
-disk : 20go (essentiellement pour les logs, les volumes sont externalisés via NFS)
+disk : 20go (essentiellement pour les logs, les volumes sont externalisés via NFS @TODO)
 
 ___
 - Initialize using 
 
 ```
-$ sudo make init-swarm ARGS="--swarm-mode worker --domain-name worker-1"
+$ sudo make init-swarm-worker ARGS=""
 ```
 
 - Connect using

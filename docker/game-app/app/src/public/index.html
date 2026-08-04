@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compteur</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #0f0f1a;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    .counter {
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      padding: 3rem 5rem;
+      border-radius: 2rem;
+      background: #1a1a2e;
+      border: 2px solid #16213e;
+      box-shadow: 0 0 40px rgba(233, 69, 96, 0.15);
+      transition: box-shadow 0.2s, transform 0.1s;
+    }
+
+    .counter:hover {
+      box-shadow: 0 0 60px rgba(233, 69, 96, 0.3);
+    }
+
+    .counter:active {
+      transform: scale(0.97);
+    }
+
+    .counter-value {
+      font-size: 9rem;
+      font-weight: 700;
+      color: #e94560;
+      line-height: 1;
+      transition: transform 0.08s;
+      display: block;
+    }
+
+    .counter-value.bump {
+      transform: scale(1.12);
+    }
+
+    .counter-label {
+      margin-top: 1.5rem;
+      color: #6b6b80;
+      font-size: 1rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="counter" onclick="increment()">
+    <span class="counter-value" id="value">—</span>
+    <div class="counter-label">Cliquez pour incrémenter</div>
+  </div>
+
+  <script>
+    const el = document.getElementById('value');
+
+    function bump() {
+      el.classList.remove('bump');
+      void el.offsetWidth; // reflow
+      el.classList.add('bump');
+      setTimeout(() => el.classList.remove('bump'), 150);
+    }
+
+    async function loadCounter() {
+      const res = await fetch('/api/counter');
+      const { value } = await res.json();
+      el.textContent = value;
+    }
+
+    async function increment() {
+      const res = await fetch('/api/counter/increment', { method: 'POST' });
+      const { value } = await res.json();
+      el.textContent = value;
+      bump();
+    }
+
+    loadCounter();
+  </script>
+</body>
+</html>

@@ -14,6 +14,6 @@ packages:
   - docker.io
 runcmd:
   - docker swarm init
-  - echo "Swarm initialisé à $(date)" > /var/log/cloud-init.log
+  - echo "Swarm initialisé à $(date)" >> /var/log/cloud-init.log
   - docker node ls > /var/log/cloud-init.log
-  - echo "Cloud-init terminé à $(date)" > /var/log/cloud-init.log
+  - echo "Cloud-init terminé à $(date)" >> /var/log/cloud-init.log

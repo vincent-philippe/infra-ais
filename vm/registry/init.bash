@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 if [[ $EUID -ne 0 ]]; then
     echo "Ce script doit être lancé en root"
     exit 1
@@ -10,43 +10,31 @@ while [[ $# -gt 0 ]]; do
     case $1 in                                                                                                                                                                          
         --instance-id) instance_id="$2"; shift 2 ;;
         --domain-name) domain_name="$2";  shift 2 ;;
-        --swarm-mode) swarm_mode="$2"; shift 2 ;;
-        --help) echo "Usage: $0 swarm_mode <mode> --instance-id <id> --domain-name <name>"; exit 0 ;;
+        --help) echo "Usage: $0 --instance-id <id> --domain-name <name>"; exit 0 ;;
         *) echo "Unknown option $1"; exit 1 ;;
     esac                                       
 done
-###############MENU###############
 
-swarm_mode=${swarm_mode:-"manager"}
 domain_name=${domain_name:-"swarm-1"}
 instance_id=${instance_id:-$domain_name}
+###############MENU###############
+
 # base directory to load user/meta data
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$DIR/../_scripts/load-env.bash"
 
-source "$DIR/../load-env.bash"
+# >>>> Following content will be used by cloud-init to fill the vm configuration >>>>
+envsubst < "$DIR/conf/harbor.yml" > "/tmp/$domain_name.harbor.yml"
+export HARBOR_CONFIG=$(base64 /tmp/$domain_name.harbor.yml -w 0)
+# <<<< Following content will be used by cloud-init to fill the vm configuration <<<<
 
-# depending on mode, the user/meta data would differr
-case $swarm_mode in
-    "worker") DIR="${DIR}/worker" ;;
-    "manager") DIR="${DIR}/manager" ;;
-    *) echo "mode should be either worker or manager" ; exit 1 ;;
-esac
+source "$DIR/../_scripts/boot-cloud-init.bash"
 
-cp "$DIR/meta-data.yml" "/tmp/$domain_name.meta-data.yml"
 
-sed -i "s|{instance-id}|$instance_id|" "/tmp/$domain_name.meta-data.yml"
-sed -i "s|{domain-name}|$domain_name|" "/tmp/$domain_name.meta-data.yml"
-
-echo "[cloud-init] reading user-data and meta-data for $domain_name..."
-
-envsubst < "$DIR/user-data.yml" > "/tmp/$domain_name.user-data.yml"
-
-cloud-localds "/tmp/$domain_name.iso" "/tmp/$domain_name.user-data.yml" "/tmp/$domain_name.meta-data.yml"
-cp "/tmp/$domain_name.iso" /var/lib/libvirt/images/
-
-echo "[cloud-init] seed iso have been initialized at /tmp/$domain_name.iso..."
-
-echo "[virt] installing the domain from cloud disk using seed instructions..."
+if virsh dominfo "$domain_name" &>/dev/null; then
+    echo "[virt] Le domaine '$domain_name' est déjà défini dans virsh, abandon."
+    exit 1
+fi
 
 if [[ ! -f /var/lib/libvirt/images/debian-13-generic-amd64.qcow2 ]]; then
     echo "[virt] need to download debian qemu disk"
@@ -55,16 +43,16 @@ fi
 
 echo "[virt] creating the disk for this vm based on debian 13"
 
-sudo qemu-img create -f qcow2 -F qcow2 \
+qemu-img create -f qcow2 -F qcow2 \
   -b /var/lib/libvirt/images/debian-13-generic-amd64.qcow2 \
-  /var/lib/libvirt/images/$domain_name-debian-13-generic-amd64.qcow2 20G
+  "/var/lib/libvirt/images/$domain_name-debian-13-generic-amd64.qcow2" 40G
 
 virt-install \
-  --name $domain_name \
-  --memory 4000 \
+  --name "$domain_name" \
+  --memory 3000 \
   --vcpus 2 \
-  --disk /var/lib/libvirt/images/$domain_name-debian-13-generic-amd64.qcow2 \
-  --disk /tmp/$domain_name.iso,device=cdrom \
+  --disk "/var/lib/libvirt/images/$domain_name-debian-13-generic-amd64.qcow2" \
+  --disk "/var/lib/libvirt/images/$domain_name.iso,device=cdrom" \
   --network network=default \
   --os-variant debian13 \
   --import \

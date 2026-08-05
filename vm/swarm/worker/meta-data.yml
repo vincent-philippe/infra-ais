@@ -1,2 +1,2 @@
-instance-id: {instance-id}
-local-hostname: {domain-name}
+instance-id: ${INSTANCE_ID}
+local-hostname: ${DOMAIN_NAME}

@@ -1,4 +1,5 @@
 #cloud-config
+# Depends on swarm manager before booting
 users:
   - name: admin
     sudo: ALL=(ALL) NOPASSWD:ALL
@@ -12,8 +13,11 @@ packages:
   - htop
   - curl
   - docker.io
+write_files:
+  - path: /var/log/cloud-init.log
+    owner: admin:admin
 runcmd:
-  - docker swarm join --token ${SWARM_TOKEN}
-  - echo "Swarm initialisé à $(date)" >> /var/log/cloud-init.log
-  - docker node ls > /var/log/cloud-init.log
-  - echo "Cloud-init terminé à $(date)" >> /var/log/cloud-init.log
+  - "until docker swarm join --token ${SWARM_TOKEN}; do echo \"[$(date)] Swarm join failed, retrying...\"  >> /var/log/cloud-init.log; sleep 5; done" 
+  - echo "[$(date)] Swarm initialisé" >> /var/log/cloud-init.log
+  - docker node ls >> /var/log/cloud-init.log
+  - echo "[$(date)] Cloud-init terminé" >> /var/log/cloud-init.log

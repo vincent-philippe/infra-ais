@@ -3,18 +3,14 @@
 # - Config : main configuration (meta-data)
 # - Final : User script (user-data)
 
-cp "$DIR/meta-data.yml" "/tmp/$domain_name.meta-data.yml"
+echo "[cloud-init] reading user-data and meta-data for $DOMAIN_NAME..."
 
-sed -i "s|{instance-id}|$instance_id|" "/tmp/$domain_name.meta-data.yml"
-sed -i "s|{domain-name}|$domain_name|" "/tmp/$domain_name.meta-data.yml"
+envsubst < "$DIR/meta-data.yml" > "/tmp/$DOMAIN_NAME.meta-data.yml"
+envsubst < "$DIR/user-data.yml" > "/tmp/$DOMAIN_NAME.user-data.yml"
 
-echo "[cloud-init] reading user-data and meta-data for $domain_name..."
+cloud-localds "/tmp/$DOMAIN_NAME.iso" "/tmp/$DOMAIN_NAME.user-data.yml" "/tmp/$DOMAIN_NAME.meta-data.yml"
+cp "/tmp/$DOMAIN_NAME.iso" /var/lib/libvirt/images/
 
-envsubst < "$DIR/user-data.yml" > "/tmp/$domain_name.user-data.yml"
-
-cloud-localds "/tmp/$domain_name.iso" "/tmp/$domain_name.user-data.yml" "/tmp/$domain_name.meta-data.yml"
-cp "/tmp/$domain_name.iso" /var/lib/libvirt/images/
-
-echo "[cloud-init] seed iso have been initialized at /tmp/$domain_name.iso..."
+echo "[cloud-init] seed iso have been initialized at /tmp/$DOMAIN_NAME.iso..."
 
 echo "[virt] installing the domain from cloud disk using seed instructions..."

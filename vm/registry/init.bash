@@ -15,8 +15,8 @@ while [[ $# -gt 0 ]]; do
     esac                                       
 done
 
-domain_name=${domain_name:-"swarm-1"}
-instance_id=${instance_id:-$domain_name}
+export DOMAIN_NAME=${domain_name:-"harbor-1"}
+export INSTANCE_ID=${instance_id:-$DOMAIN_NAME}
 ###############MENU###############
 
 # base directory to load user/meta data
@@ -24,15 +24,14 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$DIR/../_scripts/load-env.bash"
 
 # >>>> Following content will be used by cloud-init to fill the vm configuration >>>>
-envsubst < "$DIR/conf/harbor.yml" > "/tmp/$domain_name.harbor.yml"
-export HARBOR_CONFIG=$(base64 /tmp/$domain_name.harbor.yml -w 0)
+envsubst < "$DIR/conf/harbor.yml" > "/tmp/$DOMAIN_NAME.harbor.yml"
+export HARBOR_CONFIG=$(base64 /tmp/$DOMAIN_NAME.harbor.yml -w 0)
 # <<<< Following content will be used by cloud-init to fill the vm configuration <<<<
 
 source "$DIR/../_scripts/boot-cloud-init.bash"
 
-
-if virsh dominfo "$domain_name" &>/dev/null; then
-    echo "[virt] Le domaine '$domain_name' est déjà défini dans virsh, abandon."
+if virsh dominfo "$DOMAIN_NAME" &>/dev/null; then
+    echo "[virt] Le domaine '$DOMAIN_NAME' est déjà défini dans virsh, abandon."
     exit 1
 fi
 
@@ -45,14 +44,14 @@ echo "[virt] creating the disk for this vm based on debian 13"
 
 qemu-img create -f qcow2 -F qcow2 \
   -b /var/lib/libvirt/images/debian-13-generic-amd64.qcow2 \
-  "/var/lib/libvirt/images/$domain_name-debian-13-generic-amd64.qcow2" 40G
+  "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" 40G
 
 virt-install \
-  --name "$domain_name" \
+  --name "$DOMAIN_NAME" \
   --memory 3000 \
   --vcpus 2 \
-  --disk "/var/lib/libvirt/images/$domain_name-debian-13-generic-amd64.qcow2" \
-  --disk "/var/lib/libvirt/images/$domain_name.iso,device=cdrom" \
+  --disk "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" \
+  --disk "/var/lib/libvirt/images/$DOMAIN_NAME.iso,device=cdrom" \
   --network network=default \
   --os-variant debian13 \
   --import \
@@ -61,4 +60,4 @@ virt-install \
 
 echo "[virt] done !"
 echo "[virt] domain has been defined and is now running..."
-virsh list | grep "$domain_name"
+virsh list | grep "$DOMAIN_NAME"

@@ -13,24 +13,24 @@ packages:
   - wget
   - openssl
   - docker.io
+  - docker-compose
 write_files:
   - path: /opt/harbor/harbor.yml
     encoding: b64
     permissions: '0644'
     content: |
       ${HARBOR_CONFIG}
+  - path: /var/log/cloud-init.log
 runcmd:
   # create data directory to preserve image even though harbor is shutdown
   - mkdir /data
   # create certs directory
   - mkdir -p /opt/harbor/certs
   # >>>> FOR LAB ONLY (WILL USE A PKI LATER) >>>>
-  - openssl ecparam -name prime256v1 -genkey -noout -out /opt/harbor/certs/server.key
-  - openssl req -new -sha256 -subj "/CN=harbor.horizon.fr" -key /opt/harbor/certs/server.key -out /opt/harbor/certs/server.csr
-  - openssl x509 -req -days 365 -in /opt/harbor/certs/server.csr -signkey /opt/harbor/certs/server.key -out /opt/harbor/certs/server.crt
+  - openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -keyout /opt/harbor/certs/server.key -out /opt/harbor/certs/server.crt -days 365 -nodes -subj "/CN=${HARBOR_DOMAIN_NAME}" -addext "subjectAltName=DNS:${HARBOR_DOMAIN_NAME}"
   # <<<< FOR LAB ONLY (WILL USE A PKI LATER) <<<<<
   - wget https://github.com/goharbor/harbor/releases/download/v2.15.2/harbor-offline-installer-v2.15.2.tgz -O /opt/harbor-offline-installer-v2.15.2.tgz
   - cd /opt && tar xzvf ./harbor-offline-installer-v2.15.2.tgz
-  - echo "Harbor téléchargé et installé à $(date)" >> /var/log/cloud-init.log
+  - echo "[$(date)] Harbor téléchargé et installé" >> /var/log/cloud-init.log
   - cd /opt/harbor && ./install.sh --with-trivy
-  - echo "Harbor est en cours d'exécution $(date)" >> /var/log/cloud-init.log
+  - echo "[$(date)] Harbor est en cours d'exécution" >> /var/log/cloud-init.log

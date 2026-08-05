@@ -2,9 +2,9 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: gameapp
-      POSTGRES_PASSWORD: gameapp
-      POSTGRES_DB: gameapp
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
@@ -13,8 +13,9 @@ services:
 
   app:
     build: ./app
+    image: harbor.horizon.fr/game-app/app:latest
     environment:
-      DATABASE_URL: postgres://gameapp:gameapp@db:5432/gameapp
+      DATABASE_URL: ${DATABASE_URL}
     networks:
       - backend
       - frontend
@@ -24,6 +25,7 @@ services:
 
   nginx:
     build: ./nginx
+    image: harbor.horizon.fr/game-app/nginx:latest
     ports:
       - "80:8080"
     networks:

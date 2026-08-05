@@ -27,7 +27,7 @@ $ sudo make init-swarm-manager ARGS=""
 - Connect using
 
 ```
-ssh admin@$(virsh domifaddr swarm-1 | grep 192. | cut -d " " -f 20 | cut -d "/" -f 1)
+ssh admin@$(virsh domifaddr swarm-1 | awk '/192\./{print $4}' | cut -d "/" -f 1)
 ```
 
 ### swarm worker
@@ -58,5 +58,5 @@ $ sudo make init-swarm-worker ARGS=""
 - Connect using
 
 ```
-ssh admin@$(virsh domifaddr worker-1 | grep 192. | cut -d " " -f 20 | cut -d "/" -f 1)
+ssh admin@$(virsh domifaddr worker-1 | awk '/192\./{print $4}' | cut -d "/" -f 1)
 ```

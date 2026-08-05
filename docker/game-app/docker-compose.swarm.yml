@@ -1,0 +1,61 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/gameapp_postgres_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/gameapp_postgres_password
+      POSTGRES_DB: gameapp
+    secrets:
+      - gameapp_postgres_user
+      - gameapp_postgres_password
+    volumes:
+      # @TODO USE NFS TO STORE DATABASE (/data_nfs/gameapp/postgresql)
+      - /data/gameapp/db:/var/lib/postgresql/data
+    networks:
+      - game_app_intra
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  app:
+    image: harbor.horizon.fr/game-app/app:latest
+    environment:
+      DATABASE_URL_FILE: /run/secrets/gameapp_database_url
+    secrets:
+      - gameapp_database_url
+    networks:
+      - game_app_intra
+#     - traefik @TODO TRAEFIK IS NOT DEPLOYED AT THIS POINT
+    deploy:
+      replicas: 2
+      placement:
+        max_replicas_per_node: 1
+
+  nginx:
+    image: harbor.horizon.fr/game-app/nginx:latest
+    ports:
+      - "80:8080"
+    networks:
+      - game_app_intra
+#     - traefik @TODO TRAEFIK IS NOT DEPLOYED AT THIS POINT
+    deploy:
+      replicas: 2
+      placement:
+        max_replicas_per_node: 1
+
+networks:
+  game_app_intra:
+    driver: overlay
+    external: true
+# traefik:          @TODO TRAEFIK IS NOT DEPLOYED AT THIS POINT
+#   external: true  @TODO TRAEFIK IS NOT DEPLOYED AT THIS POINT
+
+secrets:
+  gameapp_postgres_user:
+    external: true
+  gameapp_postgres_password:
+    external: true
+  gameapp_database_url:
+    external: true

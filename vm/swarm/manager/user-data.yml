@@ -1,4 +1,5 @@
 #cloud-config
+# Depends on registry (swarm can't run without registry access to pull image) bofore booting
 users:
   - name: admin
     sudo: ALL=(ALL) NOPASSWD:ALL
@@ -11,9 +12,31 @@ packages:
   - vim
   - htop
   - curl
+  - openssl
   - docker.io
+write_files:
+  - path: /var/log/cloud-init.log
+    owner: admin:admin
 runcmd:
   - docker swarm init
-  - echo "Swarm initialisé à $(date)" >> /var/log/cloud-init.log
-  - docker node ls > /var/log/cloud-init.log
-  - echo "Cloud-init terminé à $(date)" >> /var/log/cloud-init.log
+  - echo "[$(date)] Swarm initialisé" >> /var/log/cloud-init.log
+  - docker node ls >> /var/log/cloud-init.log
+  # >>>> @TODO TEMPORARY WHILE NO PKI IS DEPLOYED >>>>
+  - mkdir -p /usr/local/share/ca-certificates/${HARBOR_DOMAIN_NAME}
+  - mkdir -p /etc/docker/certs.d/${HARBOR_DOMAIN_NAME}
+  - |
+    until openssl s_client -connect ${HARBOR_DOMAIN_NAME}:443 -showcerts </dev/null 2>/dev/null |
+    openssl x509 -outform PEM > /usr/local/share/ca-certificates/${HARBOR_DOMAIN_NAME}/rootCA.crt; do
+      echo "[$(date)] Registry not ready, waiting for ${HARBOR_DOMAIN_NAME}..." >> /var/log/cloud-init.log
+      sleep 10
+    done
+  - cp /usr/local/share/ca-certificates/${HARBOR_DOMAIN_NAME}/rootCA.crt /etc/docker/certs.d/${HARBOR_DOMAIN_NAME}/ca.crt
+  - update-ca-certificates
+  - systemctl restart docker
+  # <<<< @TODO TEMPORARY WHILE NO PKI IS DEPLOYED <<<<
+  - echo "${HARBOR_ROBOT_PASSWORD}" | docker login ${HARBOR_DOMAIN_NAME} -u '${HARBOR_ROBOT_ACCOUNT}' --password-stdin
+  # >>>> data specific to this network, create volume, network... >>>>
+  - docker network create --driver overlay game_app_intra
+  - mkdir -p /data/gameapp/db
+  # <<<< data specific to this network, create volume, network... <<<<
+  - echo "[$(date)] Cloud-init terminé" >> /var/log/cloud-init.log

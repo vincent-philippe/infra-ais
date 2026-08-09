@@ -6,14 +6,14 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 ###############MENU###############
-while [[ $# -gt 0 ]]; do                                                                                                                                                            
-    case $1 in                                                                                                                                                                          
+while [[ $# -gt 0 ]]; do
+    case $1 in
         --instance-id) instance_id="$2"; shift 2 ;;
         --domain-name) domain_name="$2";  shift 2 ;;
         --swarm-mode) swarm_mode="$2"; shift 2 ;;
         --help) echo "Usage: $0 swarm-mode <mode> --instance-id <id> --domain-name <name>"; exit 0 ;;
         *) echo "Unknown option $1"; exit 1 ;;
-    esac                                       
+    esac
 done
 
 export SWARM_MODE=${swarm_mode:-"manager"}

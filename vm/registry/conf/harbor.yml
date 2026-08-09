@@ -1,7 +1,7 @@
 # Configuration file of Harbor
 
 # Hostname or public IP (never use localhost in production)
-hostname: harbor.horizon.fr
+hostname: ${HARBOR_DOMAIN_NAME}
 
 # http related config
 http:

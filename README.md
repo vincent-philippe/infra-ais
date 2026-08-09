@@ -5,8 +5,8 @@
 
 ### Swarm
 
-[swarm](./vm/swarm/README.md)
+[swarm](./vm/swarm/_docs/README.md)
 
 ### Registry Harbor
 
-[registry](./vm/registry/README.md)
+[registry](./vm/registry/_docs/README.md)

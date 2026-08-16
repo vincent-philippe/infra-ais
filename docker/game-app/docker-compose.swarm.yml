@@ -27,21 +27,15 @@ services:
       - gameapp_database_url
     networks:
       - game_app_intra
-#     - traefik @TODO TRAEFIK IS NOT DEPLOYED AT THIS POINT
+      - traefik
     deploy:
       replicas: 2
-      placement:
-        max_replicas_per_node: 1
-
-  nginx:
-    image: harbor.horizon.fr/game-app/nginx:latest
-    ports:
-      - "80:8080"
-    networks:
-      - game_app_intra
-#     - traefik @TODO TRAEFIK IS NOT DEPLOYED AT THIS POINT
-    deploy:
-      replicas: 2
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.gameapp.rule=Host(`${HOST}`)"
+        - "traefik.http.services.gameapp.loadbalancer.server.port=8080"
+        - "traefik.http.services.api.loadbalancer.healthcheck.path=/api/counter"
+        - "traefik.http.services.api.loadbalancer.healthcheck.interval=10s"
       placement:
         max_replicas_per_node: 1
 
@@ -49,8 +43,8 @@ networks:
   game_app_intra:
     driver: overlay
     external: true
-# traefik:          @TODO TRAEFIK IS NOT DEPLOYED AT THIS POINT
-#   external: true  @TODO TRAEFIK IS NOT DEPLOYED AT THIS POINT
+  traefik:
+    external: true
 
 secrets:
   gameapp_postgres_user:

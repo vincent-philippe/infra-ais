@@ -32,6 +32,13 @@ case $SWARM_MODE in
 esac
 
 source "$DIR/../../_scripts/load-env.bash"
+
+export TRAEFIK_TLS_CONF=$(base64 "$DIR/traefik/conf/tls.yml" -w 0)
+envsubst < "$DIR/traefik/conf/traefik.toml" > "/tmp/$DOMAIN_NAME/traefik/traefik.tom"
+export TRAEFIK_CONF=$(base64 "/tmp/$DOMAIN_NAME/traefik/traefik.tom" -w 0)
+envsubst < "$DIR/traefik/docker-compose-swarm.yml" > "/tmp/$DOMAIN_NAME/traefik/docker-compose-swarm.yml"
+export COMPOSE_TRAEFIK=$(base64 "/tmp/$DOMAIN_NAME/traefik/docker-compose-swarm.yml" -w 0)
+
 source "$DIR/../../_scripts/boot-cloud-init.bash"
 
 if virsh dominfo "$DOMAIN_NAME" &>/dev/null; then

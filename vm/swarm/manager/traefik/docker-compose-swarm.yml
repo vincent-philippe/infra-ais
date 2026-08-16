@@ -1,0 +1,88 @@
+services:
+  socket-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    # Le proxy a besoin du socket Docker complet (accès restreint au réseau)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - socket-proxy-network
+    # Variables d'environnement : 0=interdit, 1=autorisé (GET uniquement par défaut)
+    environment:
+      # Ressources Docker autorisées en lecture (GET)
+      - CONTAINERS=1     # Liste les conteneurs
+      - SERVICES=1       # Liste les services Swarm
+      - TASKS=1          # Liste les tâches Swarm
+      - NETWORKS=1       # Liste les réseaux
+      - VOLUMES=0        # INTERDIT : accès aux volumes
+      - IMAGES=0         # INTERDIT : gestion des images
+      # Actions écritures (POST/PUT/DELETE) - toutes interdites par défaut
+      - POST=0           # INTERDIT : création de ressources
+      - AUTH=0           # INTERDIT : authentification registry
+      - EXEC=0           # INTERDIT : exec dans conteneurs (vecteur critique)
+      # Accès info système
+      - INFO=1           # Infos daemon Docker (version, etc.)
+      - PING=1           # Health check
+    # Réseau isolé : seuls les conteneurs sur socket-proxy-network peuvent accéder
+    # Le proxy n'est PAS exposé sur le réseau hôte (pas de ports)
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+
+  traefik:
+    image: traefik:v3.7.10
+    secrets:
+      - traefik_dashboard_credential
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+    volumes:
+      - /etc/traefik/tls.yml:/etc/traefik/tls.yml:ro
+      - /etc/traefik/conf/traefik.toml:/etc/traefik/traefik.toml:ro
+      - /etc/traefik/certs:/etc/traefik/certs:ro
+    networks:
+      - socket-proxy-network
+      - traefik
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+    labels:
+      - "traefik.enable=true"
+
+      # Dashboard router
+      - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_HOST}`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.tls=true"
+
+      # Basic‑auth middleware
+      - "traefik.http.middlewares.dashboard-auth.basicauth.usersfile=/run/secrets/traefik_dashboard_credential
+      - "traefik.http.routers.dashboard.middlewares=dashboard-auth@swarm"
+
+      # Service hint
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+
+networks:
+  socket-proxy-network:
+    driver: overlay
+    internal: true
+  traefik:
+    driver: overlay
+    external: true
+
+secrets:
+  traefik_dashboard_credential:
+    external: true

@@ -20,6 +20,11 @@ write_files:
     permissions: '0644'
     content: |
       ${HARBOR_CONFIG}
+  - path: /etc/systemd/system/harbor.service
+    encoding: b64
+    permissions: '0644'
+    content: |
+      ${HARBOR_SERVICE}
 runcmd:
   # create data directory to preserve image even though harbor is shutdown
   - mkdir /data

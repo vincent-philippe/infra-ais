@@ -14,6 +14,22 @@ packages:
   - curl
   - openssl
   - docker.io
+write_files:
+  - path: /etc/traefik/conf/traefik.toml
+    encoding: b64
+    permissions: '0644'
+    content: |
+      ${TRAEFIK_CONF}
+  - path: /etc/traefik/tls.yml
+    encoding: b64
+    permissions: '0644'
+    content: |
+      ${TRAEFIK_TLS_CONF}
+  - path: /docker-compose-traefik.yml
+    encoding: b64
+    permissions: '0644'
+    content: |
+      ${COMPOSE_TRAEFIK}
 runcmd:
   - docker swarm init
   - echo "[$(date)] Swarm initialisé" >> /var/log/cloud-init.log
@@ -37,3 +53,12 @@ runcmd:
   - mkdir -p /data/gameapp/db
   # <<<< data specific to this network, create volume, network... <<<<
   - echo "[$(date)] Cloud-init terminé" >> /var/log/cloud-init.log
+  # <<<< TRAEFIK REVERSE PROXY PART <<<<
+  # >>>> @TODO TEMPORARY WHILE NO PKI IS DEPLOYED >>>>
+  # To serve HTTPS localy, traefik need a certificate
+  - mkdir -p /etc/traefik/certs
+  - openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/traefik/certs/local.key -out /etc/traefik/certs/local.crt -subj "/CN=*.swarm.horizon.fr"
+  # <<<< @TODO TEMPORARY WHILE NO PKI IS DEPLOYED <<<<  
+  - docker network create --driver overlay traefik_proxy || true
+  - docker stack deploy -c /docker-compose-traefik.yml traefik
+  # >>>> TRAEFIK REVERSE PROXY PART >>>>

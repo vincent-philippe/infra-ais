@@ -26,6 +26,7 @@ source "$DIR/../_scripts/load-env.bash"
 # >>>> Following content will be used by cloud-init to fill the vm configuration >>>>
 envsubst < "$DIR/conf/harbor.yml" > "/tmp/$DOMAIN_NAME.harbor.yml"
 export HARBOR_CONFIG=$(base64 /tmp/$DOMAIN_NAME.harbor.yml -w 0)
+export HARBOR_SERVICE=$(base64 "$DIR/conf/harbor.service" -w 0)
 # <<<< Following content will be used by cloud-init to fill the vm configuration <<<<
 
 source "$DIR/../_scripts/boot-cloud-init.bash"

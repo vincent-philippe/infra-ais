@@ -1,36 +1,34 @@
 services:
   socket-proxy:
     image: tecnativa/docker-socket-proxy:latest
-    # Le proxy a besoin du socket Docker complet (accès restreint au réseau)
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - socket-proxy-network
-    # Variables d'environnement : 0=interdit, 1=autorisé (GET uniquement par défaut)
     environment:
-      # Ressources Docker autorisées en lecture (GET)
+      # Api Docker (GET)
       - CONTAINERS=1     # Liste les conteneurs
       - SERVICES=1       # Liste les services Swarm
       - TASKS=1          # Liste les tâches Swarm
+      - NODES=1          # Requis : le provider swarm résout les nodes des tâches
       - NETWORKS=1       # Liste les réseaux
       - VOLUMES=0        # INTERDIT : accès aux volumes
       - IMAGES=0         # INTERDIT : gestion des images
-      # Actions écritures (POST/PUT/DELETE) - toutes interdites par défaut
+      # Api Docker (POST/PUT/DELETE)
       - POST=0           # INTERDIT : création de ressources
       - AUTH=0           # INTERDIT : authentification registry
       - EXEC=0           # INTERDIT : exec dans conteneurs (vecteur critique)
-      # Accès info système
+      # Api Docker sys info
       - INFO=1           # Infos daemon Docker (version, etc.)
       - PING=1           # Health check
-    # Réseau isolé : seuls les conteneurs sur socket-proxy-network peuvent accéder
-    # Le proxy n'est PAS exposé sur le réseau hôte (pas de ports)
     deploy:
       replicas: 1
       placement:
         constraints:
           - node.role == manager
       restart_policy:
-        condition: on-failure
+        condition: any
+        delay: 5s
 
   traefik:
     image: traefik:v3.7.10
@@ -53,34 +51,44 @@ services:
       - socket-proxy-network
       - traefik
     deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
+      # `global` : une instance par nœud. Les ports sont publiés en `mode: host`,
+      # qui ne binde 80/443 que sur les nœuds exécutant réellement la task — sans
+      # routing mesh. Avec `replicas: 1` épinglé au manager, ce nœud était le point
+      # de défaillance unique de tout l'ingress, y compris pour les répliques
+      # applicatives saines hébergées ailleurs. Chaque instance atteint le
+      # socket-proxy du manager via l'overlay `socket-proxy-network`.
+      mode: global
       restart_policy:
-        condition: on-failure
-    labels:
-      - "traefik.enable=true"
+        condition: any
+        delay: 5s
+      # Le provider swarm lit les labels du SERVICE Swarm, pas ceux des
+      # conteneurs : ils doivent rester sous `deploy`.
+      labels:
+        - "traefik.enable=true"
 
-      # Dashboard router
-      - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_HOST}`)"
-      - "traefik.http.routers.dashboard.entrypoints=websecure"
-      - "traefik.http.routers.dashboard.service=api@internal"
-      - "traefik.http.routers.dashboard.tls=true"
+        # Dashboard router
+        - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_HOST}`)"
+        - "traefik.http.routers.dashboard.entrypoints=websecure"
+        - "traefik.http.routers.dashboard.service=api@internal"
+        - "traefik.http.routers.dashboard.tls=true"
 
-      # Basic‑auth middleware
-      - "traefik.http.middlewares.dashboard-auth.basicauth.usersfile=/run/secrets/traefik_dashboard_credential
-      - "traefik.http.routers.dashboard.middlewares=dashboard-auth@swarm"
+        # Basic-auth middleware
+        - "traefik.http.middlewares.dashboard-auth.basicauth.usersfile=/run/secrets/traefik_dashboard_credential"
+        - "traefik.http.routers.dashboard.middlewares=dashboard-auth@swarm"
 
-      # Service hint
-      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+        # Le router cible api@internal : le service généré par ces labels n'est
+        # jamais utilisé. Ce port ne sert qu'à éviter l'erreur "port is missing".
+        - "traefik.http.services.traefik.loadbalancer.server.port=8080"
 
 networks:
   socket-proxy-network:
     driver: overlay
     internal: true
+  # Réseau partagé avec les stacks applicatives : contrairement à l'exemple
+  # mono-stack de la doc Traefik, il est créé au provisioning (overlay +
+  # attachable) et référencé en `external`, sinon Swarm le préfixerait du nom
+  # du stack (`traefik_traefik`) et gameapp ne pourrait pas le rejoindre.
   traefik:
-    driver: overlay
     external: true
 
 secrets:

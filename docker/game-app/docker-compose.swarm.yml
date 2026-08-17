@@ -33,9 +33,9 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.gameapp.rule=Host(`${HOST}`)"
-        - "traefik.http.services.gameapp.loadbalancer.server.port=8080"
-        - "traefik.http.services.api.loadbalancer.healthcheck.path=/api/counter"
-        - "traefik.http.services.api.loadbalancer.healthcheck.interval=10s"
+        - "traefik.http.services.gameapp.loadbalancer.server.port=3000"
+        - "traefik.http.services.gameapp.loadbalancer.healthcheck.path=/api/counter"
+        - "traefik.http.services.gameapp.loadbalancer.healthcheck.interval=10s"
       placement:
         max_replicas_per_node: 1
 

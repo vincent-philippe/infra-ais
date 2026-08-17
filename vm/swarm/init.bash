@@ -33,11 +33,13 @@ esac
 
 source "$DIR/../../_scripts/load-env.bash"
 
-export TRAEFIK_TLS_CONF=$(base64 "$DIR/traefik/conf/tls.yml" -w 0)
-envsubst < "$DIR/traefik/conf/traefik.toml" > "/tmp/$DOMAIN_NAME/traefik/traefik.tom"
-export TRAEFIK_CONF=$(base64 "/tmp/$DOMAIN_NAME/traefik/traefik.tom" -w 0)
-envsubst < "$DIR/traefik/docker-compose-swarm.yml" > "/tmp/$DOMAIN_NAME/traefik/docker-compose-swarm.yml"
-export COMPOSE_TRAEFIK=$(base64 "/tmp/$DOMAIN_NAME/traefik/docker-compose-swarm.yml" -w 0)
+if [[ $SWARM_MODE == "manager" ]]; then
+    export TRAEFIK_TLS_CONF=$(base64 "$DIR/traefik/conf/tls.yml" -w 0)
+    envsubst < "$DIR/traefik/conf/traefik.toml" > "/tmp/$DOMAIN_NAME.traefik.toml"
+    export TRAEFIK_CONF=$(base64 "/tmp/$DOMAIN_NAME.traefik.toml" -w 0)
+    envsubst < "$DIR/traefik/docker-compose-swarm.yml" > "/tmp/$DOMAIN_NAME.traefik.docker-compose-swarm.yml"
+    export COMPOSE_TRAEFIK=$(base64 "/tmp/$DOMAIN_NAME.traefik.docker-compose-swarm.yml" -w 0)
+fi
 
 source "$DIR/../../_scripts/boot-cloud-init.bash"
 

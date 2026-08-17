@@ -15,9 +15,10 @@ ssh admin@$$(virsh domifaddr swarm-1 | grep -oP '192\.\d+\.\d+\.\d+')
 set -a && \
 source /data/gameapp/.env.swarm && \
 set +a && \
-envsubst < /data/gameapp/compose.swarm.yml > /data/gameapp/compose.swarm.yml.cp && \
-docker stack deploy gameapp -c /data/gameapp/compose.swarm.yml.cp --with-registry-auth && \
-rm -rf 
+mkdir -p /tmp/gameapp && \
+touch /tmp/gameapp/compose.swarm.yml && \
+envsubst < /data/gameapp/compose.swarm.yml > /tmp/gameapp/compose.swarm.yml && \
+docker stack deploy gameapp -c /tmp/gameapp/compose.swarm.yml --with-registry-auth
 ```
 
 ## Secrets

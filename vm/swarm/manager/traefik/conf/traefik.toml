@@ -22,16 +22,18 @@
 # Optional
 # Default:
 [entryPoints]
-  [entrypoints.web.http.redirections.entrypoint]
-    to = websecure
-    scheme = https
-    permanent = true
   [entryPoints.web]
     address = ":80"
+    # Redirection systématique HTTP -> HTTPS
+    [entryPoints.web.http.redirections.entryPoint]
+      to = "websecure"
+      scheme = "https"
+      permanent = true
 
   [entryPoints.websecure]
     address = ":443"
-    tls = true
+    # TLS activé par défaut sur cet entrypoint (certificats via providers.file)
+    [entryPoints.websecure.http.tls]
 
 ################################################################
 # Traefik logs configuration

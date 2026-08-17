@@ -31,7 +31,8 @@ write_files:
     content: |
       ${COMPOSE_TRAEFIK}
 runcmd:
-  - docker swarm init
+  # default is to run a manager, otherwise, just join the qorum as a reachable manager
+  - docker swarm join --token ${SWARM_TOKEN_MANAGER} || docker swarm init
   - echo "[$(date)] Swarm initialisé" >> /var/log/cloud-init.log
   - docker node ls >> /var/log/cloud-init.log
   # >>>> @TODO TEMPORARY WHILE NO PKI IS DEPLOYED >>>>
@@ -59,6 +60,6 @@ runcmd:
   - mkdir -p /etc/traefik/certs
   - openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/traefik/certs/local.key -out /etc/traefik/certs/local.crt -subj "/CN=*.swarm.horizon.fr"
   # <<<< @TODO TEMPORARY WHILE NO PKI IS DEPLOYED <<<<  
-  - docker network create --driver overlay traefik_proxy || true
-  - docker stack deploy -c /docker-compose-traefik.yml traefik
+  # Référencé en `external` par le stack traefik et par les stacks applicatives
+  - docker network create --driver overlay --attachable traefik || true
   # >>>> TRAEFIK REVERSE PROXY PART >>>>

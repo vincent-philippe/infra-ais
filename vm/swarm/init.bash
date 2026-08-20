@@ -11,14 +11,22 @@ while [[ $# -gt 0 ]]; do
         --instance-id) instance_id="$2"; shift 2 ;;
         --domain-name) domain_name="$2";  shift 2 ;;
         --swarm-mode) swarm_mode="$2"; shift 2 ;;
-        --help) echo "Usage: $0 swarm-mode <mode> --instance-id <id> --domain-name <name>"; exit 0 ;;
+        --ip-address) ip_address="$2"; shift 2 ;;
+        --help) echo "Usage: $0 --swarm-mode <mode> --instance-id <id> --domain-name <name> --ip-address <ip>"; exit 0 ;;
         *) echo "Unknown option $1"; exit 1 ;;
     esac
 done
 
+if [[ -z "$ip_address" ]]; then
+    echo "[error] --ip-address must be set in .env"
+    exit 1
+fi
+
 export SWARM_MODE=${swarm_mode:-"manager"}
 export DOMAIN_NAME=${domain_name:-"swarm-1"}
 export INSTANCE_ID=${instance_id:-$DOMAIN_NAME}
+export DOMAIN_IP_ADDRESS=${ip_address}
+
 ###############MENU###############
 
 # base directory to load user/meta data
@@ -69,6 +77,7 @@ virt-install \
   --os-variant debian13 \
   --import \
   --graphics vnc \
+  --console pty,target_type=serial \
   --noautoconsole
 
 echo "[virt] done !"

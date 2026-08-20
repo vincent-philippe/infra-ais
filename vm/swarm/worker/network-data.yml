@@ -4,7 +4,7 @@ ethernets:
     dhcp4: false
     dhcp6: false
     addresses:
-      - ${SWARM_WORKER_IP_ADDRESS}
+      - ${DOMAIN_IP_ADDRESS}
     routes:
       - to: default
         via: 192.168.122.1

@@ -16,3 +16,8 @@ if [[ -z "$AUTHORIZED_KEY" ]]; then
     echo "[error] AUTHORIZED_KEY must be set in .env"
     exit 1
 fi
+
+if [[ -z "$CONSOLE_ADMIN_PASSWORD" ]]; then
+    echo "[error] CONSOLE_ADMIN_PASSWORD must be set in .env"
+    exit 1
+fi

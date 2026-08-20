@@ -5,8 +5,14 @@ users:
     sudo: ALL=(ALL) NOPASSWD:ALL
     groups: sudo
     shell: /bin/bash
+    lock_passwd: false
     ssh_authorized_keys:
       - ${AUTHORIZED_KEY}
+chpasswd:
+  expire: false
+  users:
+    - name: admin
+      password: ${CONSOLE_ADMIN_PASSWORD}
 package_update: true
 packages:
   - vim
@@ -14,6 +20,7 @@ packages:
   - curl
   - openssl
   - docker.io
+  - keepalived
 write_files:
   - path: /etc/traefik/conf/traefik.toml
     encoding: b64
@@ -30,6 +37,11 @@ write_files:
     permissions: '0644'
     content: |
       ${COMPOSE_TRAEFIK}
+  - path: /etc/keepalived/keepalived.conf
+    encoding: b64
+    permissions: '0644'
+    content: |
+      ${KEEPALIVED_CONF}
 runcmd:
   # default is to run a manager, otherwise, just join the qorum as a reachable manager
   - docker swarm join --token ${SWARM_TOKEN_MANAGER} || docker swarm init
@@ -63,3 +75,6 @@ runcmd:
   # Référencé en `external` par le stack traefik et par les stacks applicatives
   - docker network create --driver overlay --attachable traefik || true
   # >>>> TRAEFIK REVERSE PROXY PART >>>>
+  # >>>> KEEPALIVED >>>>
+  - systemctl enable --now keepalived
+  # <<<< KEEPALIVED <<<<

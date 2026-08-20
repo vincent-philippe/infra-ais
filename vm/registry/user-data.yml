@@ -4,8 +4,14 @@ users:
     sudo: ALL=(ALL) NOPASSWD:ALL
     groups: sudo
     shell: /bin/bash
+    lock_passwd: false
     ssh_authorized_keys:
       - ${AUTHORIZED_KEY}
+chpasswd:
+  expire: false
+  users:
+    - name: admin
+      password: ${CONSOLE_ADMIN_PASSWORD}
 package_update: true
 packages:
   - vim

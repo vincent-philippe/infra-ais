@@ -9,7 +9,7 @@ Noeud manager du cluster actif swarm
 |     | Valeur |
 | -------- | ------- |
 | AUTHORIZED_KEY | la clé de l'utilisateur (admin) pour connection ssh à l'instance (exemple : voir [`.env.example`](/.env.example)) |
-| SWARM_IP_ADDRESS | L'ip (privée) du swarm (exemple : voir [`.env.example`](/.env.example)) |
+| IP_ADDRESS | L'ip (privée) du swarm (exemple : voir [`.env.example`](/.env.example)) |
 | TRAEFIK_HOST | Le nom de domaine auquel traefik est joignable (exemple : voir [`.env.example`](/.env.example)) |
 | SWARM_TOKEN_MANAGER | le token swarm pour joindre le cluster swarm en tant que manager (exemple : voir [`.env.example`](/.env.example)) |
 

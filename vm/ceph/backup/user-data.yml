@@ -1,0 +1,30 @@
+#cloud-config
+users:
+  - name: admin
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: sudo
+    shell: /bin/bash
+    lock_passwd: false
+    ssh_authorized_keys:
+      - ${AUTHORIZED_KEY}
+chpasswd:
+  expire: false
+  users:
+    - name: admin
+      password: ${CONSOLE_ADMIN_PASSWORD}
+write_files:
+  - path: /root/.ssh/authorized_keys
+    encoding: b64
+    permissions: '0644'
+    content: |
+      ${MASTER_SSH_PUB_KEY}
+package_update: true
+packages:
+  - docker.io
+  - lvm2
+  - chrony
+runcmd:
+  - systemctl enable --now docker
+  - curl --silent --remote-name --location https://download.ceph.com/rpm-reef/el9/noarch/cephadm
+  - chmod +x cephadm
+  - mv cephadm /usr/sbin/

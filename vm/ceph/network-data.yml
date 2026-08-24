@@ -1,0 +1,18 @@
+version: 2
+ethernets:
+  enp1s0:
+    dhcp4: false
+    dhcp6: false
+    addresses:
+      - ${DOMAIN_IP_ADDRESS}
+    routes:
+      - to: default
+        via: 192.168.122.1
+    nameservers:
+      addresses:
+        - 192.168.122.1
+  enp2s0:
+    dhcp4: false
+    dhcp6: false
+    addresses:
+      - ${IP_INTERNAL_CLUSTER}

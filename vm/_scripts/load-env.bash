@@ -17,6 +17,11 @@ if [[ -z "$AUTHORIZED_KEY" ]]; then
     exit 1
 fi
 
+if [[ -z "$SSH_PRIVATE_KEY_PATH" ]]; then
+    echo "[error] SSH_PRIVATE_KEY_PATH must be set in .env"
+    exit 1
+fi
+
 if [[ -z "$CONSOLE_ADMIN_PASSWORD" ]]; then
     echo "[error] CONSOLE_ADMIN_PASSWORD must be set in .env"
     exit 1

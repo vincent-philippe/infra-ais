@@ -21,6 +21,8 @@ packages:
   - openssl
   - docker.io
   - keepalived
+  - ceph-common
+  - ceph-fuse
 write_files:
   - path: /etc/traefik/conf/traefik.toml
     encoding: b64
@@ -42,6 +44,21 @@ write_files:
     permissions: '0644'
     content: |
       ${KEEPALIVED_CONF}
+  - path: /etc/ceph/ceph.conf
+    encoding: b64
+    permissions: '0644'
+    content: |
+      ${CEPH_CONF}
+  - path: /etc/ceph/ceph.client.admin.keyring
+    encoding: b64
+    permissions: '0600'
+    content: |
+      ${CEPH_ADMIN_KEYRING}
+  - path: /etc/ceph/ceph.client.docker.keyring
+    encoding: b64
+    permissions: '0600'
+    content: |
+      ${CEPH_DOCKER_KEYRING}
 runcmd:
   # default is to run a manager, otherwise, just join the qorum as a reachable manager
   - docker swarm join --token ${SWARM_TOKEN_MANAGER} || docker swarm init
@@ -78,3 +95,7 @@ runcmd:
   # >>>> KEEPALIVED >>>>
   - systemctl enable --now keepalived
   # <<<< KEEPALIVED <<<<
+  # >>>> CEPH UNIFIED STORAGE >>>>>
+  - docker plugin install wetopi/rbd --grant-all-permissions --alias rbd RBD_CONF_POOL=docker-pool RBD_CONF_KEYRING_USER=client.docker # required for rbd pool storage
+  - mkdir -p /etc/ceph
+  # <<<< CEPH UNIFIED STORAGE <<<<<

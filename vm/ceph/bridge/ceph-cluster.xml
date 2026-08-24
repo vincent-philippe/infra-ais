@@ -1,0 +1,4 @@
+<network>
+  <name>ceph-cluster</name>
+  <bridge name='virbr-ceph' stp='on' delay='0'/>
+</network>

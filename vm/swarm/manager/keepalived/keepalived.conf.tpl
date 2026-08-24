@@ -13,6 +13,6 @@ vrrp_instance VI_1 {
         auth_pass ${KEEPALIVED_PWD}
     }
     virtual_ipaddress {
-        ${SWARM_VIP_ADDRESS}/24
+        ${SWARM_VIP_ADDRESS}/27
     }
 }

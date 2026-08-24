@@ -31,6 +31,12 @@ gameapp_postgres_password
 gameapp_database_url
 ```
 
+## Volume storage
+
+```bash
+docker volume create -d wetopi/rbd gameapp-db
+```
+
 ## Network
 
 Le network suivant doit être créé en overlay (si plus d'un replica)

@@ -5,12 +5,12 @@ services:
       POSTGRES_USER_FILE: /run/secrets/gameapp_postgres_user
       POSTGRES_PASSWORD_FILE: /run/secrets/gameapp_postgres_password
       POSTGRES_DB: gameapp
+      PGDATA: /var/lib/postgresql/data/pgdata
     secrets:
       - gameapp_postgres_user
       - gameapp_postgres_password
     volumes:
-      # @TODO USE NFS TO STORE DATABASE (/data_nfs/gameapp/postgresql)
-      - /data/gameapp/db:/var/lib/postgresql/data
+      - rbd-data:/var/lib/postgresql/data
     networks:
       - game_app_intra
     deploy:
@@ -52,4 +52,9 @@ secrets:
   gameapp_postgres_password:
     external: true
   gameapp_database_url:
+    external: true
+
+volumes:
+  rbd-data:
+    name: gameapp-db
     external: true

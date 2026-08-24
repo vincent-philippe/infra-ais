@@ -12,7 +12,8 @@ while [[ $# -gt 0 ]]; do
         --domain-name) domain_name="$2";  shift 2 ;;
         --swarm-mode) swarm_mode="$2"; shift 2 ;;
         --ip-address) ip_address="$2"; shift 2 ;;
-        --help) echo "Usage: $0 --swarm-mode <mode> --instance-id <id> --domain-name <name> --ip-address <ip>"; exit 0 ;;
+        --ceph-ip-address) ceph_ip_address="$2"; shift 2 ;;
+        --help) echo "Usage: $0 --swarm-mode <mode> --instance-id <id> --domain-name <name> --ip-address <ip> [--ceph-ip-address <ceph-ip>]"; exit 0 ;;
         *) echo "Unknown option $1"; exit 1 ;;
     esac
 done
@@ -26,6 +27,8 @@ export SWARM_MODE=${swarm_mode:-"manager"}
 export DOMAIN_NAME=${domain_name:-"swarm-1"}
 export INSTANCE_ID=${instance_id:-$DOMAIN_NAME}
 export DOMAIN_IP_ADDRESS=${ip_address}
+export CEPH_IP_ADDRESS=${ceph_ip_address}
+export CEPH_IP=${ceph_ip_address%%/*}
 
 ###############MENU###############
 
@@ -40,6 +43,13 @@ case $SWARM_MODE in
 esac
 
 source "$DIR/../../_scripts/load-env.bash"
+
+if [[ -n "$ceph_ip_address" ]]; then
+    echo "[ceph] fetching client keyrings and cluster conf from $CEPH_IP"
+    export CEPH_CONF=$(ssh -q -i "$SSH_PRIVATE_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null admin@"$CEPH_IP" "sudo cat /etc/ceph/ceph.conf" | base64 -w 0)
+    export CEPH_ADMIN_KEYRING=$(ssh -q -i "$SSH_PRIVATE_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null admin@"$CEPH_IP" "sudo cat /etc/ceph/ceph.client.admin.keyring" | base64 -w 0)
+    export CEPH_DOCKER_KEYRING=$(ssh -q -i "$SSH_PRIVATE_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null admin@"$CEPH_IP" "sudo cat /etc/ceph/ceph.client.docker.keyring" | base64 -w 0)
+fi
 
 if [[ $SWARM_MODE == "manager" ]]; then
     export TRAEFIK_TLS_CONF=$(base64 "$DIR/traefik/conf/tls.yml" -w 0)

@@ -10,14 +10,14 @@ echo "[cloud-init] reading user-data and meta-data for $DOMAIN_NAME..."
 
 touch "/tmp/$DOMAIN_NAME.meta-data.yml" "/tmp/$DOMAIN_NAME.user-data.yml" "/tmp/$DOMAIN_NAME.network-data.yml"
 
-envsubst < "$DIR/meta-data.yml" > "/tmp/$DOMAIN_NAME.meta-data.yml"
-envsubst < "$DIR/user-data.yml" > "/tmp/$DOMAIN_NAME.user-data.yml"
+envsubst < "${DIR_META:-$DIR}/meta-data.yml" > "/tmp/$DOMAIN_NAME.meta-data.yml"
+envsubst < "${DIR_USER:-$DIR}/user-data.yml" > "/tmp/$DOMAIN_NAME.user-data.yml"
 set +e
 cloud-init schema --config-file "/tmp/$DOMAIN_NAME.user-data.yml" --annotate || exit 1;
 set -e
 #>OPTIONAL NETWORK CONF>#
-if [[ -s "$DIR/network-data.yml" ]]; then
-    envsubst < "$DIR/network-data.yml" > "/tmp/$DOMAIN_NAME.network-data.yml"
+if [[ -s "${DIR_NETWORK:-$DIR}/network-data.yml" ]]; then
+    envsubst < "${DIR_NETWORK:-$DIR}/network-data.yml" > "/tmp/$DOMAIN_NAME.network-data.yml"
     CLOUD_OPTS+=( --network-config "/tmp/$DOMAIN_NAME.network-data.yml" )
     set +e
     cloud-init schema --config-file "/tmp/$DOMAIN_NAME.network-data.yml" --schema-type network-config --annotate || exit 1;

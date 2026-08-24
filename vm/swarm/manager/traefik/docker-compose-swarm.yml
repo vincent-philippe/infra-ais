@@ -51,12 +51,6 @@ services:
       - socket-proxy-network
       - traefik
     deploy:
-      # `global` : une instance par nœud. Les ports sont publiés en `mode: host`,
-      # qui ne binde 80/443 que sur les nœuds exécutant réellement la task — sans
-      # routing mesh. Avec `replicas: 1` épinglé au manager, ce nœud était le point
-      # de défaillance unique de tout l'ingress, y compris pour les répliques
-      # applicatives saines hébergées ailleurs. Chaque instance atteint le
-      # socket-proxy du manager via l'overlay `socket-proxy-network`.
       mode: global
       restart_policy:
         condition: any

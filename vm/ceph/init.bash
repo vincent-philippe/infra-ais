@@ -45,7 +45,7 @@ if  [[ -z "$ip_master" ]]; then
     DIR="${DIR}/master"
 else
     DIR="${DIR}/backup"
-    export MASTER_SSH_PUB_KEY=$(ssh -q -i "$SSH_PRIVATE_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null admin@"$MASTER_IP" "cat /etc/ceph/ceph.pub" | base64 -w 0)
+    export MASTER_SSH_PUB_KEY=$(ssh -q -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null admin@"$MASTER_IP" "cat /etc/ceph/ceph.pub" | base64 -w 0)
 fi
 
 # common directories (overriding default which is to pick from the subdirectories while in our case this is common files)
@@ -97,9 +97,9 @@ virt-install \
 
 if [[ -n "$ip_master" ]]; then
     echo "[ceph] waiting for $DOMAIN_NAME to be reachable and docker to be running..."
-    until ssh -q -i "$SSH_PRIVATE_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 -o BatchMode=yes admin@"$DOMAIN_IP" "systemctl is-active --quiet docker" 2>/dev/null; do
+    until ssh -q -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 -o BatchMode=yes admin@"$DOMAIN_IP" "systemctl is-active --quiet docker" 2>/dev/null; do
         sleep 5
     done
     echo "[ceph] registering $DOMAIN_NAME as a cephadm-managed host from $MASTER_IP"
-    ssh -i "$SSH_PRIVATE_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null admin@"$MASTER_IP" "sudo cephadm shell -- ceph orch host add $DOMAIN_NAME $DOMAIN_IP"
+    ssh -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null admin@"$MASTER_IP" "sudo cephadm shell -- ceph orch host add $DOMAIN_NAME $DOMAIN_IP"
 fi

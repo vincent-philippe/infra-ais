@@ -46,9 +46,9 @@ source "$DIR/../../_scripts/load-env.bash"
 
 if [[ -n "$ceph_ip_address" ]]; then
     echo "[ceph] fetching client keyrings and cluster conf from $CEPH_IP"
-    export CEPH_CONF=$(ssh -q -i "$SSH_PRIVATE_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null admin@"$CEPH_IP" "sudo cat /etc/ceph/ceph.conf" | base64 -w 0)
-    export CEPH_ADMIN_KEYRING=$(ssh -q -i "$SSH_PRIVATE_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null admin@"$CEPH_IP" "sudo cat /etc/ceph/ceph.client.admin.keyring" | base64 -w 0)
-    export CEPH_DOCKER_KEYRING=$(ssh -q -i "$SSH_PRIVATE_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null admin@"$CEPH_IP" "sudo cat /etc/ceph/ceph.client.docker.keyring" | base64 -w 0)
+    export CEPH_CONF=$(ssh -q -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null admin@"$CEPH_IP" "sudo cat /etc/ceph/ceph.conf" | base64 -w 0)
+    export CEPH_ADMIN_KEYRING=$(ssh -q -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null admin@"$CEPH_IP" "sudo cat /etc/ceph/ceph.client.admin.keyring" | base64 -w 0)
+    export CEPH_DOCKER_KEYRING=$(ssh -q -i "$SSH_KEY_PATH" -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null admin@"$CEPH_IP" "sudo cat /etc/ceph/ceph.client.docker.keyring" | base64 -w 0)
 fi
 
 if [[ $SWARM_MODE == "manager" ]]; then

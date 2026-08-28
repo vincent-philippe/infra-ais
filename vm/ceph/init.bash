@@ -71,7 +71,7 @@ qemu-img create -f qcow2 -F qcow2 \
   "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" 20G
 
 # Disque OSD dédié
-qemu-img create -f qcow2 /var/lib/libvirt/images/$DOMAIN_NAME-osd.qcow2 10G
+qemu-img create -f qcow2 /var/lib/libvirt/images/$DOMAIN_NAME-osd.qcow2 300G
 
 # Le bridge pour le network cluster (heartbeat -> synchro -> backup sur un réseau séparé)
 

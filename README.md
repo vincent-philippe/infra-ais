@@ -24,19 +24,19 @@ $ cp ./vm/swarm/manager/keepalived/keepalived.conf.tpl /tmp/keepalived.conf.swar
 **Init all vm**
 
 ```
-$ sudo make init-ceph-node NAME="ceph-1" IP="192.168.122.6/27" CLUSTER_INTERNAL_IP="10.0.1.6/24" CLUSTER_NETWORK="10.0.1.0/24"
+$ sudo make init-ceph-node-master NAME="ceph-1" IP="192.168.122.6/27" IP_INTERNAL_CLUSTER="10.0.1.6/24" CLUSTER_NETWORK="10.0.1.0/24"
 
-$ sudo make init-ceph-node NAME="ceph-2" IP="192.168.122.7/27" CLUSTER_INTERNAL_IP="10.0.1.7/24" IP_MASTER="192.168.122.6/27"
+$ sudo make init-ceph-node NAME="ceph-2" IP="192.168.122.7/27" IP_INTERNAL_CLUSTER="10.0.1.7/24" IP_MASTER="192.168.122.6/27"
 
-$ sudo make init-ceph-node NAME="ceph-3" IP="192.168.122.8/27" CLUSTER_INTERNAL_IP="10.0.1.8/24" IP_MASTER="192.168.122.6/27"
+$ sudo make init-ceph-node NAME="ceph-3" IP="192.168.122.8/27" IP_INTERNAL_CLUSTER="10.0.1.8/24" IP_MASTER="192.168.122.6/27"
 
 $ sudo make init-harbor NAME=harbor-1 IP="192.168.122.14/27"
 
-$ sudo make init-swarm-manager NAME="swarm-1" IP=192.168.122.10/27" KEEP_ALIVED_CONF=/tmp/keepalived.conf.swarm1 CEPH_IP_ADDRESS="192.168.122.6"
+$ sudo make init-swarm-manager NAME="swarm-1" IP="192.168.122.10/27" KEEP_ALIVED_CONF=/tmp/keepalived.conf.swarm1 CEPH_IP_ADDRESS="192.168.122.6/27"
 
-$ sudo make init-swarm-manager NAME="swarm-2" IP=192.168.122.11/27" CEPH_IP="192.168.122.6/27"
+$ sudo make init-swarm-manager NAME="swarm-2" IP="192.168.122.11/27" KEEP_ALIVED_CONF=/tmp/keepalived.conf.swarm2 CEPH_IP_ADDRESS="192.168.122.6/27"
 
-$ sudo make init-swarm-manager NAME="swarm-3" IP=192.168.122.12/27" CEPH_IP="192.168.122.6/27"
+$ sudo make init-swarm-manager NAME="swarm-3" IP="192.168.122.12/27"  KEEP_ALIVED_CONF=/tmp/keepalived.conf.swarm3 CEPH_IP_ADDRESS="192.168.122.6/27"
 
 $ sudo make deploy-harbor-cert-to-swarm HARBOR_IP=192.168.122.14 SWARM_IP="192.168.122.10 192.168.122.11 192.168.122.12"
 

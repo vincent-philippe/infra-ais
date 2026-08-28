@@ -13,7 +13,8 @@ while [[ $# -gt 0 ]]; do
         --swarm-mode) swarm_mode="$2"; shift 2 ;;
         --ip-address) ip_address="$2"; shift 2 ;;
         --ceph-ip-address) ceph_ip_address="$2"; shift 2 ;;
-        --help) echo "Usage: $0 --swarm-mode <mode> --instance-id <id> --domain-name <name> --ip-address <ip> [--ceph-ip-address <ceph-ip>]"; exit 0 ;;
+        --keep-alived-conf) keep_alived_conf="$2"; shift 2 ;;
+        --help) echo "Usage: $0 --swarm-mode <mode> --instance-id <id> --domain-name <name> --ip-address <ip> [--ceph-ip-address <ceph-ip>] [--keep-alived-conf <path>]"; exit 0 ;;
         *) echo "Unknown option $1"; exit 1 ;;
     esac
 done
@@ -27,6 +28,7 @@ export SWARM_MODE=${swarm_mode:-"manager"}
 export DOMAIN_NAME=${domain_name:-"swarm-1"}
 export INSTANCE_ID=${instance_id:-$DOMAIN_NAME}
 export DOMAIN_IP_ADDRESS=${ip_address}
+export DOMAIN_IP=${ip_address%%/*}
 export CEPH_IP_ADDRESS=${ceph_ip_address}
 export CEPH_IP=${ceph_ip_address%%/*}
 
@@ -52,11 +54,16 @@ if [[ -n "$ceph_ip_address" ]]; then
 fi
 
 if [[ $SWARM_MODE == "manager" ]]; then
+    if [[ -z "$keep_alived_conf" ]]; then
+        echo "[error] --keep-alived-conf must be set for manager mode"
+        exit 1
+    fi
     export TRAEFIK_TLS_CONF=$(base64 "$DIR/traefik/conf/tls.yml" -w 0)
     envsubst < "$DIR/traefik/conf/traefik.toml" > "/tmp/$DOMAIN_NAME.traefik.toml"
     export TRAEFIK_CONF=$(base64 "/tmp/$DOMAIN_NAME.traefik.toml" -w 0)
     envsubst < "$DIR/traefik/docker-compose-swarm.yml" > "/tmp/$DOMAIN_NAME.traefik.docker-compose-swarm.yml"
     export COMPOSE_TRAEFIK=$(base64 "/tmp/$DOMAIN_NAME.traefik.docker-compose-swarm.yml" -w 0)
+    export KEEPALIVED_CONF=$(base64 "$keep_alived_conf" -w 0)
 fi
 
 source "$DIR/../../_scripts/boot-cloud-init.bash"

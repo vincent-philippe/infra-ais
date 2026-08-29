@@ -55,13 +55,15 @@ qemu-img create -f qcow2 -F qcow2 \
   -b /var/lib/libvirt/images/debian-13-generic-amd64.qcow2 \
   "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" 40G
 
+source "$DIR/../bridge/br-server.bash"
+
 virt-install \
   --name "$DOMAIN_NAME" \
   --memory 3000 \
   --vcpus 2 \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME.iso,device=cdrom" \
-  --network network=default \
+  --network bridge=br-server,virtualport_type=openvswitch,vlan.tag0.id=10 \
   --os-variant debian13 \
   --import \
   --graphics vnc \

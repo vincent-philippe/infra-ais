@@ -12,6 +12,7 @@ chpasswd:
   users:
     - name: admin
       password: ${CONSOLE_ADMIN_PASSWORD}
+      type: text
 write_files:
   - path: /root/.ssh/authorized_keys
     encoding: b64

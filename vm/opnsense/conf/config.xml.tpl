@@ -1,0 +1,341 @@
+<?xml version="1.0"?>
+<opnsense>
+  <version>1.0</version>
+  <system>
+    <hostname>opnsense</hostname>
+    <domain>horizon.fr</domain>
+  </system>
+  <OPNsense>
+    <Firewall>
+      <Alias>
+        <geoip>
+          <url/>
+        </geoip>
+        <aliases>
+          <alias uuid="303c1524-4862-4ae7-bd2d-d7403747d961">
+            <enabled>1</enabled>
+            <name>private_networks</name>
+            <type>network</type>
+            <content>10.0.0.0/8
+172.16.0.0/12
+192.168.0.0/16</content>
+            <description>Private address ranges</description>
+          </alias>
+          <alias uuid="8509b092-747e-4218-8fdb-ce20f8db9087">
+            <enabled>1</enabled>
+            <name>ceph_client_ports</name>
+            <type>port</type>
+            <content>3300
+6789
+6800:7300</content>
+            <description>Ceph client ports: mon (msgr2/msgr1) + OSD range</description>
+          </alias>
+        </aliases>
+      </Alias>
+    </Firewall>
+  </OPNsense>
+  <interfaces>
+    <wan>
+      <if>vtnet0</if>
+      <descr>WAN</descr>
+      <enable>1</enable>
+      <ipaddr>dhcp</ipaddr>
+      <ipaddrv6>dhcp6</ipaddrv6>
+      <blockpriv>0</blockpriv>
+      <blockbogons>1</blockbogons>
+    </wan>
+    <opt1>
+      <if>vtnet4</if>
+      <descr>DMZ</descr>
+      <enable>1</enable>
+      <ipaddr>192.168.122.1</ipaddr>
+      <subnet>27</subnet>
+    </opt1>
+    <opt7>
+      <if>vtnet1</if>
+      <descr>USER</descr>
+      <enable>1</enable>
+      <ipaddr>10.0.99.1</ipaddr>
+      <subnet>24</subnet>
+    </opt7>
+    <lan>
+      <if>vtnet2</if>
+      <descr>ADMIN</descr>
+      <enable>1</enable>
+      <ipaddr>10.0.100.1</ipaddr>
+      <subnet>24</subnet>
+    </lan>
+    <opt4>
+      <if>vtnet3_vlan10</if>
+      <descr>HARBOR</descr>
+      <enable>1</enable>
+      <ipaddr>10.0.110.1</ipaddr>
+      <subnet>24</subnet>
+    </opt4>
+    <opt5>
+      <if>vtnet3_vlan20</if>
+      <descr>CEPH</descr>
+      <enable>1</enable>
+      <ipaddr>10.0.120.1</ipaddr>
+      <subnet>24</subnet>
+    </opt5>
+    <opt6>
+      <if>vtnet3_vlan30</if>
+      <descr>SWARM</descr>
+      <enable>1</enable>
+      <ipaddr>10.0.130.1</ipaddr>
+      <subnet>24</subnet>
+    </opt6>
+  </interfaces>
+  <vlans>
+    <vlan>
+      <if>vtnet3</if>
+      <tag>10</tag>
+      <vlanif>vtnet3_vlan10</vlanif>
+      <descr>HARBOR</descr>
+    </vlan>
+    <vlan>
+      <if>vtnet3</if>
+      <tag>20</tag>
+      <vlanif>vtnet3_vlan20</vlanif>
+      <descr>CEPH</descr>
+    </vlan>
+    <vlan>
+      <if>vtnet3</if>
+      <tag>30</tag>
+      <vlanif>vtnet3_vlan30</vlanif>
+      <descr>SWARM</descr>
+    </vlan>
+  </vlans>
+  <dhcpd>
+    <opt7>
+      <enable>1</enable>
+      <range>
+        <from>10.0.99.100</from>
+        <to>10.0.99.200</to>
+      </range>
+      <gateway>10.0.99.1</gateway>
+    </opt7>
+    <lan>
+      <enable>1</enable>
+      <range>
+        <from>10.0.100.100</from>
+        <to>10.0.100.200</to>
+      </range>
+      <gateway>10.0.100.1</gateway>
+    </lan>
+  </dhcpd>
+  <nat>
+    <outbound>
+      <mode>automatic</mode>
+    </outbound>
+    <rule>
+      <interface>wan</interface>
+      <protocol>tcp</protocol>
+      <source><any>1</any></source>
+      <destination>
+        <network>wanip</network>
+        <port>80</port>
+      </destination>
+      <target>${SWARM_VIP_ADDRESS}</target>
+      <local-port>80</local-port>
+      <descr>DNAT HTTP - swarm VIP</descr>
+      <associated-rule-id>nat_80</associated-rule-id>
+    </rule>
+    <rule>
+      <interface>wan</interface>
+      <protocol>tcp</protocol>
+      <source><any>1</any></source>
+      <destination>
+        <network>wanip</network>
+        <port>443</port>
+      </destination>
+      <target>${SWARM_VIP_ADDRESS}</target>
+      <local-port>443</local-port>
+      <descr>DNAT HTTPS - swarm VIP</descr>
+      <associated-rule-id>nat_443</associated-rule-id>
+    </rule>
+  </nat>
+  <filter>
+    <rule>
+      <id>nat_80</id>
+      <type>pass</type>
+      <interface>wan</interface>
+      <protocol>tcp</protocol>
+      <source><any>1</any></source>
+      <destination>
+        <address>${SWARM_VIP_ADDRESS}</address>
+        <port>80</port>
+      </destination>
+      <descr>Allow forwarded HTTP to swarm VIP</descr>
+    </rule>
+    <rule>
+      <id>nat_443</id>
+      <type>pass</type>
+      <interface>wan</interface>
+      <protocol>tcp</protocol>
+      <source><any>1</any></source>
+      <destination>
+        <address>${SWARM_VIP_ADDRESS}</address>
+        <port>443</port>
+      </destination>
+      <descr>Allow forwarded HTTPS to swarm VIP</descr>
+    </rule>
+    <rule>
+      <type>block</type>
+      <interface>wan</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><any>1</any></source>
+      <destination><any>1</any></destination>
+      <log>1</log>
+      <descr>Deny all other WAN traffic</descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>opt4</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>opt4</network></source>
+      <destination><network>opt6</network></destination>
+      <descr>Allow HARBOR - SWARM</descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>opt6</interface>
+      <protocol>tcp</protocol>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>opt6</network></source>
+      <destination>
+        <network>opt4</network>
+        <port>443</port>
+      </destination>
+      <descr>Allow SWARM - HARBOR (registry pulls, HTTPS only)</descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>opt5</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>opt5</network></source>
+      <destination><network>opt6</network></destination>
+      <descr>Allow CEPH - SWARM</descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>opt6</interface>
+      <protocol>tcp</protocol>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>opt6</network></source>
+      <destination>
+        <network>opt5</network>
+        <port>ceph_client_ports</port>
+      </destination>
+      <descr>Allow SWARM - CEPH (client I/O: mon 3300/6789, OSD 6800:7300)</descr>
+    </rule>
+    <!-- ADMIN is fully trusted: explicit full access to every internal
+         zone (br-user, br-server's three VLANs, br-dmz) rather than the
+         narrow dashboard-only rule this used to be -->
+    <rule>
+      <type>pass</type>
+      <interface>lan</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>lan</network></source>
+      <destination><network>opt7</network></destination>
+      <descr>Allow ADMIN - USER (br-user)</descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>lan</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>lan</network></source>
+      <destination><network>opt4</network></destination>
+      <descr>Allow ADMIN - HARBOR (br-server)</descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>lan</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>lan</network></source>
+      <destination><network>opt5</network></destination>
+      <descr>Allow ADMIN - CEPH (br-server)</descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>lan</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>lan</network></source>
+      <destination><network>opt6</network></destination>
+      <descr>Allow ADMIN - SWARM (br-server)</descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>lan</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>lan</network></source>
+      <destination><network>opt1</network></destination>
+      <descr>Allow ADMIN - DMZ (br-dmz)</descr>
+    </rule>
+    <rule>
+      <type>block</type>
+      <interface>opt4</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>opt4</network></source>
+      <destination><network>private_networks</network></destination>
+      <descr>Block HARBOR - private_networks</descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>opt4</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>opt4</network></source>
+      <destination><any>1</any></destination>
+      <descr>Allow HARBOR  to WAN</descr>
+    </rule>
+    <rule>
+      <type>block</type>
+      <interface>opt5</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>opt5</network></source>
+      <destination><network>private_networks</network></destination>
+      <descr>Block CEPH - private_networks </descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>opt5</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>opt5</network></source>
+      <destination><any>1</any></destination>
+      <descr>Allow CEPH  to WAN</descr>
+    </rule>
+    <rule>
+      <type>block</type>
+      <interface>opt7</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>opt7</network></source>
+      <destination><network>private_networks</network></destination>
+      <descr>Block USER - private_networks </descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>opt7</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>opt7</network></source>
+      <destination><any>1</any></destination>
+      <descr>Allow USER (br-user)  to WAN</descr>
+    </rule>
+    <rule>
+      <type>block</type>
+      <interface>lan</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>lan</network></source>
+      <destination><network>private_networks</network></destination>
+      <descr>Block ADMIN - private_networks</descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>lan</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>lan</network></source>
+      <destination><any>1</any></destination>
+      <descr>Allow ADMIN  to WAN</descr>
+    </rule>
+  </filter>
+</opnsense>

@@ -12,15 +12,21 @@ while [[ $# -gt 0 ]]; do
         --domain-name) domain_name="$2";  shift 2 ;;
         --swarm-mode) swarm_mode="$2"; shift 2 ;;
         --ip-address) ip_address="$2"; shift 2 ;;
+        --ip-server-address) ip_server_address="$2"; shift 2 ;;
         --ceph-ip-address) ceph_ip_address="$2"; shift 2 ;;
         --keep-alived-conf) keep_alived_conf="$2"; shift 2 ;;
-        --help) echo "Usage: $0 --swarm-mode <mode> --instance-id <id> --domain-name <name> --ip-address <ip> [--ceph-ip-address <ceph-ip>] [--keep-alived-conf <path>]"; exit 0 ;;
+        --help) echo "Usage: $0 --swarm-mode <mode> --instance-id <id> --domain-name <name> --ip-address <ip> --ip-server-address <ip/cidr> [--ceph-ip-address <ceph-ip>] [--keep-alived-conf <path>]"; exit 0 ;;
         *) echo "Unknown option $1"; exit 1 ;;
     esac
 done
 
 if [[ -z "$ip_address" ]]; then
-    echo "[error] --ip-address must be set in .env"
+    echo "[error] --ip-address must be set (address on br-dmz — public-facing, this is what WAN:80/443 gets forwarded to)"
+    exit 1
+fi
+
+if [[ -z "$ip_server_address" ]]; then
+    echo "[error] --ip-server-address must be set (address on br-server VLAN 30 — private channel to harbor/ceph only)"
     exit 1
 fi
 
@@ -29,6 +35,7 @@ export DOMAIN_NAME=${domain_name:-"swarm-1"}
 export INSTANCE_ID=${instance_id:-$DOMAIN_NAME}
 export DOMAIN_IP_ADDRESS=${ip_address}
 export DOMAIN_IP=${ip_address%%/*}
+export SERVER_IP_ADDRESS=${ip_server_address}
 export CEPH_IP_ADDRESS=${ceph_ip_address}
 export CEPH_IP=${ceph_ip_address%%/*}
 
@@ -84,13 +91,16 @@ qemu-img create -f qcow2 -F qcow2 \
   -b /var/lib/libvirt/images/debian-13-generic-amd64.qcow2 \
   "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" 20G
 
+source "$DIR/../../bridge/br-server.bash"
+
 virt-install \
   --name "$DOMAIN_NAME" \
   --memory 4000 \
   --vcpus 2 \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME.iso,device=cdrom" \
-  --network network=default \
+  --network bridge:br-dmz \
+  --network bridge=br-server,virtualport_type=openvswitch,vlan.tag0.id=30 \
   --os-variant debian13 \
   --import \
   --graphics vnc \

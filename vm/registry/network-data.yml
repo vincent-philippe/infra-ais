@@ -7,7 +7,7 @@ ethernets:
       - ${DOMAIN_IP_ADDRESS}
     routes:
       - to: default
-        via: 192.168.122.1
+        via: 10.0.110.1
     nameservers:
       addresses:
-        - 192.168.122.1
+        - 10.0.110.1

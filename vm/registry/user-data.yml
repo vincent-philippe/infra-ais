@@ -12,6 +12,7 @@ chpasswd:
   users:
     - name: admin
       password: ${CONSOLE_ADMIN_PASSWORD}
+      type: text
 package_update: true
 packages:
   - vim

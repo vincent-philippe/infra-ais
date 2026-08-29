@@ -7,22 +7,24 @@ help: ## Affiche cette aide
 	  | sort \
 	  | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
-init-ceph-node-master: ## Crée un noeud ceph - make init-ceph-node-master NAME=ceph-1 IP=192.168.122.6/27 IP_INTERNAL_CLUSTER=10.0.1.6/24 CLUSTER_NETWORK=10.0.1.0/24
-	@./vm/ceph/init.bash --domain-name $(NAME) --ip-public-address $(IP) --ip-internal-address $(IP_INTERNAL_CLUSTER) --net-cluster $(CLUSTER_NETWORK)
-init-ceph-node: ## Créé un noeud qui rejoint le cluster ciblé par 'ip-master' - make init-ceph-node NAME=ceph-2 IP=192.168.122.7/27 IP_INTERNAL_CLUSTER=10.0.1.7/24 IP_MASTER=192.168.122.6/27
-	@./vm/ceph/init.bash --domain-name $(NAME) --ip-public-address $(IP) --ip-internal-address $(IP_INTERNAL_CLUSTER) --ip-master $(IP_MASTER)
-init-swarm-worker: ## Crée une VM worker swarm - make init-swarm-worker NAME=worker-1 IP=192.168.122.11/27 CEPH_IP_ADDRESS=192.168.122.6/27
-	@./vm/swarm/init.bash --swarm-mode worker --domain-name $(NAME) --ip-address $(IP) --ceph-ip-address $(CEPH_IP_ADDRESS)
-init-swarm-manager: ## Crée une VM manager swarm - make init-swarm-manager NAME=swarm-1 IP=192.168.122.10/27 KEEP_ALIVED_CONF=./keepalived.conf CEPH_IP_ADDRESS=192.168.122.6/27
-	@./vm/swarm/init.bash --swarm-mode manager --domain-name $(NAME) --ip-address $(IP) --keep-alived-conf $(KEEP_ALIVED_CONF)  --ceph-ip-address $(CEPH_IP_ADDRESS)
-init-harbor: ## Crée la VM Harbor - make init-harbor NAME=harbor-1 IP=192.168.122.14/27
+init-ceph-node-master: ## Crée un noeud ceph - make init-ceph-node-master NAME=ceph-1 IP=10.0.120.6/24 IP_INTERNAL_CLUSTER=10.0.1.6/24 CLUSTER_NETWORK=10.0.1.0/24
+	@./vm/ceph/init.bash --domain-name $(NAME) --ip-address $(IP) --ip-internal-address $(IP_INTERNAL_CLUSTER) --net-cluster $(CLUSTER_NETWORK)
+init-ceph-node: ## Créé un noeud qui rejoint le cluster ciblé par 'ip-master' - make init-ceph-node NAME=ceph-2 IP=10.0.120.7/24 IP_INTERNAL_CLUSTER=10.0.1.7/24 IP_MASTER=10.0.120.6/24
+	@./vm/ceph/init.bash --domain-name $(NAME) --ip-address $(IP) --ip-internal-address $(IP_INTERNAL_CLUSTER) --ip-master $(IP_MASTER)
+init-swarm-worker: ## Crée une VM worker swarm - make init-swarm-worker NAME=worker-1 IP=192.168.122.11/27 SERVER_IP=10.0.130.11/24 CEPH_IP_ADDRESS=10.0.120.6/24
+	@./vm/swarm/init.bash --swarm-mode worker --domain-name $(NAME) --ip-address $(IP) --ip-server-address $(SERVER_IP) --ceph-ip-address $(CEPH_IP_ADDRESS)
+init-swarm-manager: ## Crée une VM manager swarm - make init-swarm-manager NAME=swarm-1 IP=192.168.122.10/27 SERVER_IP=10.0.130.10/24 KEEP_ALIVED_CONF=./keepalived.conf CEPH_IP_ADDRESS=10.0.120.6/24
+	@./vm/swarm/init.bash --swarm-mode manager --domain-name $(NAME) --ip-address $(IP) --ip-server-address $(SERVER_IP) --keep-alived-conf $(KEEP_ALIVED_CONF)  --ceph-ip-address $(CEPH_IP_ADDRESS)
+init-harbor: ## Crée la VM Harbor - make init-harbor NAME=harbor-1 IP=10.0.110.14/24
 	@./vm/registry/init.bash --domain-name $(NAME) --ip-address $(IP)
+init-opnsense: ## Crée la VM OPNsense (pare-feu/routeur) - make init-opnsense
+	@./vm/opnsense/init.bash
 init-traefik: ## Déploie le stack traefik sur le manager swarm - make init-traefik SWARM_IP=192.168.122.10
 	ssh admin@$(SWARM_IP) " \
 		sudo docker stack deploy -c /docker-compose-traefik.yml traefik \
 	"
 
-deploy-harbor-cert-to-swarm: ## make deploy-harbor-cert-to-swarm HARBOR_IP=192.168.122.14 SWARM_IP="192.168.122.10 192.168.122.11 ..."
+deploy-harbor-cert-to-swarm: ## make deploy-harbor-cert-to-swarm HARBOR_IP=10.0.110.14 SWARM_IP="192.168.122.10 192.168.122.11 192.168.122.12"
 	@set -a && . ./.env && set +a && \
 	scp admin@$(HARBOR_IP):/opt/harbor/certs/server.crt /tmp/$${HARBOR_DOMAIN_NAME}-rootCA.crt && \
 	for NODE_IP in $(SWARM_IP); do \

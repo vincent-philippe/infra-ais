@@ -10,17 +10,17 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         --instance-id) instance_id="$2"; shift 2 ;;
         --domain-name) domain_name="$2";  shift 2 ;;
-        --ip-public-address) ip_address="$2"; shift 2 ;;
         --ip-internal-address) ip_internal_address="$2"; shift 2 ;;
+        --ip-address) ip_address="$2"; shift 2 ;;
         --ip-master) ip_master="$2"; shift 2 ;;
         --net-cluster) net_cluster="$2"; shift 2 ;;
-        --help) echo 'Usage: $0 --instance-id <id> --domain-name <name> --ip-public-address <ip> [--ip-master <ip/cidr>|--net-cluster <ip/cidr>] --ip-internal-address <ip/cidr>'; exit 0 ;;
+        --help) echo 'Usage: $0 --instance-id <id> --domain-name <name> --ip-address <ip/cidr> [--ip-master <ip/cidr>|--net-cluster <ip/cidr>] --ip-internal-address <ip/cidr>'; exit 0 ;;
         *) echo "Unknown option $1"; exit 1 ;;
     esac
 done
 
 if [[ -z "$ip_address" ]]; then
-    echo "[error] --ip-address must be set in .env"
+    echo "[error] --ip-address must be set"
     exit 1
 fi
 
@@ -76,10 +76,12 @@ qemu-img create -f qcow2 /var/lib/libvirt/images/$DOMAIN_NAME-osd.qcow2 300G
 # Le bridge pour le network cluster (heartbeat -> synchro -> backup sur un réseau séparé)
 
 if ! virsh net-info ceph-cluster &>/dev/null; then
-    virsh net-define $DIR/../bridge/ceph-cluster.xml
+    virsh net-define $DIR/../../bridge/ceph-cluster.xml
     virsh net-start ceph-cluster
     virsh net-autostart ceph-cluster
 fi
+
+source "$DIR/../../bridge/br-server.bash"
 
 virt-install \
   --name "$DOMAIN_NAME" \
@@ -89,7 +91,7 @@ virt-install \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME.iso,device=cdrom" \
   --os-variant debian13 \
   --import \
-  --network network=default \
+  --network bridge=br-server,virtualport_type=openvswitch,vlan.tag0.id=20 \
   --network network=ceph-cluster \
   --graphics vnc \
   --console pty,target_type=serial \

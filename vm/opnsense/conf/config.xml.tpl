@@ -153,7 +153,7 @@
         <network>wanip</network>
         <port>80</port>
       </destination>
-      <target>${SWARM_VIP_ADDRESS}</target>
+      <target>192.168.122.13</target>
       <local-port>80</local-port>
       <descr>DNAT HTTP - swarm VIP</descr>
       <associated-rule-id>nat_80</associated-rule-id>
@@ -166,7 +166,7 @@
         <network>wanip</network>
         <port>443</port>
       </destination>
-      <target>${SWARM_VIP_ADDRESS}</target>
+      <target>192.168.122.13</target>
       <local-port>443</local-port>
       <descr>DNAT HTTPS - swarm VIP</descr>
       <associated-rule-id>nat_443</associated-rule-id>
@@ -180,7 +180,7 @@
       <protocol>tcp</protocol>
       <source><any>1</any></source>
       <destination>
-        <address>${SWARM_VIP_ADDRESS}</address>
+        <address>192.168.122.13</address>
         <port>80</port>
       </destination>
       <descr>Allow forwarded HTTP to swarm VIP</descr>
@@ -192,7 +192,7 @@
       <protocol>tcp</protocol>
       <source><any>1</any></source>
       <destination>
-        <address>${SWARM_VIP_ADDRESS}</address>
+        <address>192.168.122.13</address>
         <port>443</port>
       </destination>
       <descr>Allow forwarded HTTPS to swarm VIP</descr>

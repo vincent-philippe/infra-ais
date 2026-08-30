@@ -15,10 +15,10 @@ Add the following hosts (/!\ Wait that vm are booted between each steps /!\)
 Once netplan enslaves `enp1s0f0` into `br-wan`, the host loses its own direct internet access (only OPNsense's WAN vNIC gets an address there — and even that path doesn't exist yet, since OPNsense hasn't been created). `make init-opnsense` itself needs a few things from the internet (the ISO, plus a few packages it installs on demand if missing) — none of that will work anymore once netplan has cut the host's own connection. Get all of it while the host still has its own IP:
 
 ```
-$ sudo apt update && sudo apt install -y bzip2 genisoimage openvswitch-switch
+$ sudo apt update && sudo apt install -y bzip2 genisoimage qemu-utils expect openvswitch-switch
 $ sudo mkdir -p /var/lib/libvirt/images
-$ sudo wget -O /var/lib/libvirt/images/OPNsense-26.7-dvd-amd64.iso.bz2 'https://pkg.opnsense.org/releases/26.7/OPNsense-26.7-dvd-amd64.iso.bz2'
-$ sudo bunzip2 /var/lib/libvirt/images/OPNsense-26.7-dvd-amd64.iso.bz2
+$ sudo wget -O /var/lib/libvirt/images/OPNsense-26.7-serial-amd64.img.bz2 'https://pkg.opnsense.org/releases/26.7/OPNsense-26.7-serial-amd64.img.bz2'
+$ sudo bunzip2 /var/lib/libvirt/images/OPNsense-26.7-serial-amd64.img.bz2
 ```
 
 **Applying the host network configuration (netplan)**
@@ -44,7 +44,7 @@ $ cp ./vm/swarm/manager/keepalived/keepalived.conf.tpl /tmp/keepalived.conf.swar
 **Init all vm**
 
 ```
-$ sudo make init-opnsense SWARM_VIP_ADDRESS="192.168.122.13"
+$ sudo make init-opnsense
 
 $ sudo make init-ceph-node-master NAME="ceph-1" IP="10.0.120.6/24" IP_INTERNAL_CLUSTER="10.0.1.6/24" CLUSTER_NETWORK="10.0.1.0/24"
 

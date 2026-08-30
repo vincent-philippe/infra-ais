@@ -17,9 +17,8 @@ network:
       dhcp4: false
       dhcp6: false
       macaddress: 16:0c:55:5d:9f:82
-    # 10.0.99.0/24 gateway is OPNsense's USER leg (10.0.99.1)
     br-user:
-      dhcp4: true
+      dhcp4: false
     # 10.0.100.0/24 gateway is OPNsense's ADMIN leg (10.0.100.1)
     br-admin:
       dhcp4: true

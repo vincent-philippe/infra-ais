@@ -1,0 +1,8 @@
+# Backup de docker-pool (game-app/shop-app/resa-app data) vers deux repos Borg,
+# une seule invocation par run (un seul snapshot/export, fan-out vers les deux
+# destinations) : Ceph (backup-pool, monté sur /mnt/ceph-backup — voir
+# setup-backup-mount.bash) et le disque local du host où tourne ce cron.
+# Prérequis (une fois, pour chaque repo) : apt install borgbackup &&
+#   borg init --encryption=none /mnt/ceph-backup/borg-docker-pool
+#   mkdir -p /var/backups/borg-docker-pool && borg init --encryption=none /var/backups/borg-docker-pool
+0 * * * * /home/vincent-p/projects/ais/ops/rbd-backup.bash -p docker-pool -s backup -r /mnt/ceph-backup/borg-docker-pool -r /var/backups/borg-docker-pool -u docker 2>&1 | while IFS= read -r line; do echo "$(date '+%F %T') $line"; done >> /var/log/rbd-backup.log

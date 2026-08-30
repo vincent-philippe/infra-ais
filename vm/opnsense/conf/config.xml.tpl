@@ -4,6 +4,22 @@
   <system>
     <hostname>opnsense</hostname>
     <domain>horizon.fr</domain>
+    <group>
+      <name>admins</name>
+      <description>System Administrators</description>
+      <scope>system</scope>
+      <gid>1999</gid>
+      <member>0</member>
+      <priv>page-all</priv>
+    </group>
+    <user>
+      <name>root</name>
+      <descr>System Administrator</descr>
+      <scope>system</scope>
+      <groupname>admins</groupname>
+      <password>${OPNSENSE_ADMIN_PASSWORD}</password>
+      <uid>0</uid>
+    </user>
   </system>
   <OPNsense>
     <Firewall>

@@ -34,6 +34,11 @@ if [[ -z "$SWARM_VIP_ADDRESS" ]]; then
     exit 1
 fi
 
+if [[ -z "$OPNSENSE_ADMIN_PASSWORD" ]]; then
+    echo "[error] OPNSENSE_ADMIN_PASSWORD must be set in .env"
+    exit 1
+fi
+
 # https://github.com/opnsense/core/issues/5733#issuecomment-2119130729
 # >>>> build the config seed ISO for the OPNsense Configuration Importer >>>>
 rm -rf /tmp/opnsense-config-iso

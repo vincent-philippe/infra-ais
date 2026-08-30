@@ -57,7 +57,7 @@ sudo virt-install \
   --disk pool=default,size=20,format=qcow2,bus=virtio \
   --cdrom /var/lib/libvirt/images/OPNsense-26.1.2-dvd-amd64.iso \
   --disk /var/lib/libvirt/images/opnsense-config.iso,device=cdrom,bus=sata \
-  --network=bridge:br-wan,model=virtio \
+  --network=bridge:br-wan,model=virtio,mac=0c:c4:7a:85:82:66 \
   --network=bridge:br-user,model=virtio \
   --network=bridge:br-admin,model=virtio \
   --network bridge=br-server,virtualport_type=openvswitch,model=virtio,vlan.trunk=yes,vlan.tag0.id=10,vlan.tag1.id=20,vlan.tag2.id=30 \

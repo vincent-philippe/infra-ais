@@ -17,8 +17,8 @@ init-swarm-manager: ## Crée une VM manager swarm - make init-swarm-manager NAME
 	@./vm/swarm/init.bash --swarm-mode manager --domain-name $(NAME) --ip-address $(IP) --ip-server-address $(SERVER_IP) --keep-alived-conf $(KEEP_ALIVED_CONF)  --ceph-ip-address $(CEPH_IP_ADDRESS)
 init-harbor: ## Crée la VM Harbor - make init-harbor NAME=harbor-1 IP=10.0.110.14/24
 	@./vm/registry/init.bash --domain-name $(NAME) --ip-address $(IP)
-init-opnsense: ## Crée la VM OPNsense (pare-feu/routeur) - make init-opnsense
-	@./vm/opnsense/init.bash
+init-opnsense: ## Crée la VM OPNsense (pare-feu/routeur) - make init-opnsense SWARM_VIP_ADDRESS=10.0.130.13
+	@./vm/opnsense/init.bash --swarm-vip-address $(SWARM_VIP_ADDRESS)
 init-traefik: ## Déploie le stack traefik sur le manager swarm - make init-traefik SWARM_IP=192.168.122.10
 	ssh admin@$(SWARM_IP) " \
 		sudo docker stack deploy -c /docker-compose-traefik.yml traefik \

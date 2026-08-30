@@ -15,6 +15,11 @@ if [[ -z "$OPNSENSE_ADMIN_PASSWORD" ]]; then
     echo "[error] OPNSENSE_ADMIN_PASSWORD must be set in .env"
     exit 1
 fi
+
+if [[ -z "$VNC_PASSWORD" ]]; then
+    echo "[error] VNC_PASSWORD must be set in .env"
+    exit 1
+fi
 ###############MENU###############
 
 set +e
@@ -79,7 +84,7 @@ sudo virt-install \
   --network bridge=br-admin,model=virtio \
   --network bridge=br-server,virtualport_type=openvswitch,model=virtio \
   --network bridge=br-dmz,model=virtio \
-  --graphics vnc,listen=0.0.0.0,port=5910 \
+  --graphics vnc,listen=0.0.0.0,port=5910,password="$VNC_PASSWORD" \
   --boot uefi \
   --import \
   --noautoconsole

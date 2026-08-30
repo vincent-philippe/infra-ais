@@ -93,7 +93,7 @@ virt-install \
   --import \
   --network bridge=br-server,virtualport_type=openvswitch \
   --network network=ceph-cluster \
-  --graphics vnc \
+  --graphics vnc,password="$VNC_PASSWORD" \
   --console pty,target_type=serial \
   --noautoconsole
 

@@ -66,7 +66,7 @@ virt-install \
   --network bridge=br-server,virtualport_type=openvswitch \
   --os-variant debian13 \
   --import \
-  --graphics vnc \
+  --graphics vnc,password="$VNC_PASSWORD" \
   --console pty,target_type=serial \
   --noautoconsole
 

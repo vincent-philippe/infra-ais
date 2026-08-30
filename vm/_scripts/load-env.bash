@@ -29,3 +29,8 @@ if [[ -z "$CONSOLE_ADMIN_PASSWORD" ]]; then
     echo "[error] CONSOLE_ADMIN_PASSWORD must be set in .env"
     exit 1
 fi
+
+if [[ -z "$VNC_PASSWORD" ]]; then
+    echo "[error] VNC_PASSWORD must be set in .env"
+    exit 1
+fi

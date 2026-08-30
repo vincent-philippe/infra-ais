@@ -20,6 +20,9 @@
       <password>${OPNSENSE_ADMIN_PASSWORD}</password>
       <uid>0</uid>
     </user>
+    <webgui>
+      <protocol>https</protocol>
+    </webgui>
   </system>
   <OPNsense>
     <Firewall>

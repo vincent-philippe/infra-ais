@@ -22,14 +22,14 @@ os : basé sur [debian 13](https://cloud.debian.org/images/cloud/trixie/latest/d
 disk : 40go (Stockage des images, de la db de vulnérabilité, et des SBOM / Scans de vulnérabilités)
 
 ___
-- Initialize using 
+- Initialize using
 
 ```
-$ sudo make init-harbor ARGS=""
+$ sudo make init-harbor NAME=harbor-1 IP=10.0.110.14/24
 ```
 
 - Connect using
 
 ```
-ssh admin@$(virsh domifaddr harbor-1 | grep 192. | cut -d " " -f 20 | cut -d "/" -f 1)
+ssh admin@10.0.110.14
 ```

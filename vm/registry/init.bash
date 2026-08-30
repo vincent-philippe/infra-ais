@@ -63,12 +63,14 @@ virt-install \
   --vcpus 2 \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME.iso,device=cdrom" \
-  --network bridge=br-server,virtualport_type=openvswitch,vlan.tag0.id=10 \
+  --network bridge=br-server,virtualport_type=openvswitch \
   --os-variant debian13 \
   --import \
   --graphics vnc \
   --console pty,target_type=serial \
   --noautoconsole
+
+br_server_set_vlan "$DOMAIN_NAME" 10
 
 echo "[virt] done !"
 echo "[virt] domain has been defined and is now running..."

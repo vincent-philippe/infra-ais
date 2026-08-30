@@ -91,11 +91,13 @@ virt-install \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME.iso,device=cdrom" \
   --os-variant debian13 \
   --import \
-  --network bridge=br-server,virtualport_type=openvswitch,vlan.tag0.id=20 \
+  --network bridge=br-server,virtualport_type=openvswitch \
   --network network=ceph-cluster \
   --graphics vnc \
   --console pty,target_type=serial \
   --noautoconsole
+
+br_server_set_vlan "$DOMAIN_NAME" 20
 
 if [[ -n "$ip_master" ]]; then
     echo "[ceph] waiting for $DOMAIN_NAME to be reachable and docker to be running..."

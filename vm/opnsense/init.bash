@@ -92,43 +92,46 @@ sudo virt-install \
 
 br_server_set_vlan opnsense 10,20,30
 
+# disabled: the automated expect-driven console interaction was unreliable
+# over this host's SOL access and kept wedging the shared console session.
+# Handle the configuration importer prompts manually: virsh console opnsense
 # >>>> auto-answer the OPNsense configuration importer's console prompts >>>>
-echo "[opnsense] waiting for the configuration importer prompts on the console..."
-expect -c '
-set timeout 300
-spawn virsh console opnsense
-
-expect {
-    "Press any key to start the configuration importer" {
-        send "\r"
-    }
-    timeout {
-        puts stderr "timed out waiting for the configuration importer prompt"
-        exit 1
-    }
-}
-
-expect {
-    "Select device to import from" {
-        send "cd0\r"
-    }
-    timeout {
-        puts stderr "timed out waiting for the device selection prompt"
-        exit 1
-    }
-}
-
-expect {
-    "Restoring config.xml...done." {
-        puts "config.xml imported successfully"
-    }
-    timeout {
-        puts stderr "timed out waiting for config.xml to be bootstrapped"
-        exit 1
-    }
-}
-
-send "\x1d"
-expect eof
-'
+# echo "[opnsense] waiting for the configuration importer prompts on the console..."
+# expect -c '
+# set timeout 300
+# spawn virsh console opnsense
+# 
+# expect {
+#     "Press any key to start the configuration importer" {
+#         send "\r"
+#     }
+#     timeout {
+#         puts stderr "timed out waiting for the configuration importer prompt"
+#         exit 1
+#     }
+# }
+# 
+# expect {
+#     "Select device to import from" {
+#         send "cd0\r"
+#     }
+#     timeout {
+#         puts stderr "timed out waiting for the device selection prompt"
+#         exit 1
+#     }
+# }
+# 
+# expect {
+#     "Restoring config.xml...done." {
+#         puts "config.xml imported successfully"
+#     }
+#     timeout {
+#         puts stderr "timed out waiting for config.xml to be bootstrapped"
+#         exit 1
+#     }
+# }
+# 
+# send "\x1d"
+# expect eof
+# '
 # <<<< auto-answer the OPNsense configuration importer's console prompts <<<<

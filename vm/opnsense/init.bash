@@ -85,6 +85,7 @@ sudo virt-install \
   --network bridge=br-server,virtualport_type=openvswitch,model=virtio \
   --network bridge=br-dmz,model=virtio \
   --graphics vnc,listen=0.0.0.0,port=5910,password="$VNC_PASSWORD" \
+  --rng /dev/urandom,model=virtio \
   --boot uefi \
   --import \
   --noautoconsole
@@ -118,7 +119,7 @@ expect {
 }
 
 expect {
-    "Bootstrapping config.xml...done." {
+    "Restoring config.xml...done." {
         puts "config.xml imported successfully"
     }
     timeout {

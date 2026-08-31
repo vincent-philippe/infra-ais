@@ -128,7 +128,6 @@ expect {
     }
 }
 
-sleep 2
 send "\x1d"
 expect eof
 '

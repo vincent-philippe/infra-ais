@@ -99,7 +99,7 @@ virt-install \
   --vcpus 2 \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME.iso,device=cdrom" \
-  --network bridge=br-dmz \
+  --network bridge=br-dmz,virtualport_type=openvswitch \
   --network bridge=br-server,virtualport_type=openvswitch \
   --os-variant debian13 \
   --import \

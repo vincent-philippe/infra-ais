@@ -80,58 +80,15 @@ sudo virt-install \
   --disk pool=default,size=20,format=qcow2,bus=virtio \
   --disk /var/lib/libvirt/images/opnsense-config.iso,device=cdrom,bus=sata \
   --network bridge=br-wan,model=virtio,mac=0c:c4:7a:85:82:66 \
-  --network bridge=br-user,model=virtio \
-  --network bridge=br-admin,model=virtio \
+  --network bridge=br-user,virtualport_type=openvswitch,model=virtio \
+  --network bridge=br-admin,virtualport_type=openvswitch,model=virtio \
   --network bridge=br-server,virtualport_type=openvswitch,model=virtio \
-  --network bridge=br-dmz,model=virtio \
-  --graphics vnc,listen=0.0.0.0,port=5910,password="$VNC_PASSWORD" \
+  --network bridge=br-dmz,virtualport_type=openvswitch,model=virtio \
+  --graphics vnc,password="$VNC_PASSWORD" \
+  --console pty,target_type=serial \
   --rng /dev/urandom,model=virtio \
   --boot uefi \
   --import \
   --noautoconsole
 
 br_server_set_vlan opnsense 10,20,30,40
-
-# disabled: the automated expect-driven console interaction was unreliable
-# over this host's SOL access and kept wedging the shared console session.
-# Handle the configuration importer prompts manually: virsh console opnsense
-# >>>> auto-answer the OPNsense configuration importer's console prompts >>>>
-# echo "[opnsense] waiting for the configuration importer prompts on the console..."
-# expect -c '
-# set timeout 300
-# spawn virsh console opnsense
-# 
-# expect {
-#     "Press any key to start the configuration importer" {
-#         send "\r"
-#     }
-#     timeout {
-#         puts stderr "timed out waiting for the configuration importer prompt"
-#         exit 1
-#     }
-# }
-# 
-# expect {
-#     "Select device to import from" {
-#         send "cd0\r"
-#     }
-#     timeout {
-#         puts stderr "timed out waiting for the device selection prompt"
-#         exit 1
-#     }
-# }
-# 
-# expect {
-#     "Restoring config.xml...done." {
-#         puts "config.xml imported successfully"
-#     }
-#     timeout {
-#         puts stderr "timed out waiting for config.xml to be bootstrapped"
-#         exit 1
-#     }
-# }
-# 
-# send "\x1d"
-# expect eof
-# '
-# <<<< auto-answer the OPNsense configuration importer's console prompts <<<<

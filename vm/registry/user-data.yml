@@ -37,9 +37,9 @@ runcmd:
   - mkdir /data
   # create certs directory
   - mkdir -p /opt/harbor/certs
-  # >>>> FOR LAB ONLY (WILL USE A PKI LATER) >>>>
+  # >>>> self-signed cert >>>>
   - openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -keyout /opt/harbor/certs/server.key -out /opt/harbor/certs/server.crt -days 365 -nodes -subj "/CN=${HARBOR_DOMAIN_NAME}" -addext "subjectAltName=DNS:${HARBOR_DOMAIN_NAME}"
-  # <<<< FOR LAB ONLY (WILL USE A PKI LATER) <<<<<
+  # <<<< self-signed cert <<<<
   - wget https://github.com/goharbor/harbor/releases/download/v2.15.2/harbor-offline-installer-v2.15.2.tgz -O /opt/harbor-offline-installer-v2.15.2.tgz
   - cd /opt && tar xzvf ./harbor-offline-installer-v2.15.2.tgz
   - echo "[$(date)] Harbor téléchargé et installé" >> /var/log/cloud-init.log

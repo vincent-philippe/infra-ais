@@ -50,7 +50,6 @@ database:
 
 # Harbor Storage settings by default is using /data dir on local filesystem
 # Uncomment storage_service setting If you want to using external storage
-# @TODO enable once local PKI CA server is configured
 # storage_service:
 #   # ca_bundle is the path to the custom root ca certificate, which will be injected into the truststore
 #   # of registry's containers.  This is usually needed when the user hosts a internal storage with self signed certificate.
@@ -58,7 +57,6 @@ database:
 
 
 # Uncomment uaa for trusting the certificate of uaa instance that is hosted via self-signed cert.
-# @TODO enable once local PKI CA server is configured
 # uaa:
 #   ca_file: /path/to/ca
 

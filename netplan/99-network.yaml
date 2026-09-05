@@ -2,7 +2,6 @@ network:
   version: 2
   renderer: networkd
   ethernets:
-    # remove enp1s0f0 ip, opnsense will acquire it from dhcp
     enp1s0f0:
       match:
         macaddress: 0c:c4:7a:85:82:66
@@ -11,7 +10,6 @@ network:
       set-name: "enp1s0f0"
       macaddress: 6e:69:8e:a0:73:77
   bridges:
-    # public wan
     br-wan:
       interfaces: [enp1s0f0]
       dhcp4: false
@@ -19,10 +17,17 @@ network:
       macaddress: 16:0c:55:5d:9f:82
     br-user:
       dhcp4: false
+      openvswitch: {}
     # 10.0.100.0/24 gateway is OPNsense's ADMIN leg (10.0.100.1)
     br-admin:
       dhcp4: true
+      openvswitch: {}
     # 192.168.122.0/27 gateway is OPNsense's DMZ leg (192.168.122.1)
     br-dmz:
       dhcp4: false
       dhcp6: false
+      openvswitch: {}
+    br-server:
+      dhcp4: false
+      dhcp6: false
+      openvswitch: {}

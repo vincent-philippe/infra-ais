@@ -65,7 +65,7 @@ runcmd:
   - docker swarm join --token ${SWARM_TOKEN_MANAGER} || docker swarm init --advertise-addr ${DOMAIN_IP}
   - echo "[$(date)] Swarm initialisé" >> /var/log/cloud-init.log
   - docker node ls >> /var/log/cloud-init.log
-  # >>>> @TODO TEMPORARY WHILE NO PKI IS DEPLOYED >>>>
+  # >>>> trust Harbor's self-signed cert (no CA to distribute from instead) >>>>
   - mkdir -p /usr/local/share/ca-certificates/${HARBOR_DOMAIN_NAME}
   - mkdir -p /etc/docker/certs.d/${HARBOR_DOMAIN_NAME}
   - |
@@ -77,7 +77,7 @@ runcmd:
   - cp /usr/local/share/ca-certificates/${HARBOR_DOMAIN_NAME}/rootCA.crt /etc/docker/certs.d/${HARBOR_DOMAIN_NAME}/ca.crt
   - update-ca-certificates
   - systemctl restart docker
-  # <<<< @TODO TEMPORARY WHILE NO PKI IS DEPLOYED <<<<
+  # <<<< trust Harbor's self-signed cert (no CA to distribute from instead) <<<<
   - echo "${HARBOR_ROBOT_PASSWORD}" | docker login ${HARBOR_DOMAIN_NAME} -u '${HARBOR_ROBOT_ACCOUNT}' --password-stdin
   # >>>> data specific to this network, create volume, network... >>>>
   - docker network create --driver overlay game_app_intra
@@ -85,11 +85,10 @@ runcmd:
   # <<<< data specific to this network, create volume, network... <<<<
   - echo "[$(date)] Cloud-init terminé" >> /var/log/cloud-init.log
   # <<<< TRAEFIK REVERSE PROXY PART <<<<
-  # >>>> @TODO TEMPORARY WHILE NO PKI IS DEPLOYED >>>>
-  # To serve HTTPS localy, traefik need a certificate
+  # >>>> self-signed cert for traefik HTTPS >>>>
   - mkdir -p /etc/traefik/certs
   - openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/traefik/certs/local.key -out /etc/traefik/certs/local.crt -subj "/CN=*.swarm.horizon.fr"
-  # <<<< @TODO TEMPORARY WHILE NO PKI IS DEPLOYED <<<<  
+  # <<<< self-signed cert for traefik HTTPS <<<<
   # Référencé en `external` par le stack traefik et par les stacks applicatives
   - docker network create --driver overlay --attachable traefik || true
   # >>>> TRAEFIK REVERSE PROXY PART >>>>

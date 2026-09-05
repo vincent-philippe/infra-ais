@@ -1,0 +1,53 @@
+#cloud-config
+users:
+  - name: admin
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: sudo
+    shell: /bin/bash
+    lock_passwd: false
+    ssh_authorized_keys:
+      - ${AUTHORIZED_KEY}
+chpasswd:
+  expire: false
+  users:
+    - name: admin
+      password: ${CONSOLE_ADMIN_PASSWORD}
+      type: text
+package_update: true
+packages:
+  - git
+  - openssl
+  - docker.io
+  - docker-compose
+write_files:
+  - path: /opt/selks/.env
+    encoding: b64
+    permissions: '0644'
+    content: |
+      ${SELKS_ENV}
+  - path: /etc/systemd/system/selks.service
+    encoding: b64
+    permissions: '0644'
+    content: |
+      ${SELKS_SERVICE}
+runcmd:
+  # upstream docker/ compose stack, this exact tag was verified as the
+  # latest stable release tag on the upstream repo
+  - git clone --branch selks-10.0 --depth 1 https://github.com/StamusNetworks/SELKS.git /opt/selks-src
+  - cp -r /opt/selks-src/docker/. /opt/selks/
+  - rm -rf /opt/selks-src
+  - mkdir -p /opt/selks/containers-data/nginx/ssl
+  # >>>> (self-signed cert) >>>>
+  - openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -keyout /opt/selks/containers-data/nginx/ssl/scirius.key -out /opt/selks/containers-data/nginx/ssl/scirius.crt -days 3650 -nodes -subj "/CN=${DOMAIN_IP}" -addext "subjectAltName=IP:${DOMAIN_IP}"
+  # <<<< (self-signed cert) <<<<
+  - systemctl daemon-reload
+  - systemctl enable --now docker
+  - systemctl enable --now selks.service
+  - echo "[$(date)] SELKS stack en cours de démarrage (premier docker compose pull, peut prendre plusieurs minutes)" >> /var/log/cloud-init.log
+  - |
+    until docker exec scirius python manage.py shell -c "
+    from django.contrib.auth import get_user_model
+    u = get_user_model().objects.get(username='selks-user')
+    u.set_password('${SELKS_USER_PASSWORD}')
+    u.save()
+    " 2>/dev/null; do sleep 5; done

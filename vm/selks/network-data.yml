@@ -1,0 +1,29 @@
+version: 2
+ethernets:
+  enp1s0:
+    dhcp4: false
+    dhcp6: false
+    addresses:
+      - ${DOMAIN_IP_ADDRESS}
+    routes:
+      - to: default
+        via: 10.0.140.1
+    nameservers:
+      addresses:
+        - 10.0.140.1
+  enp2s0:
+    dhcp4: false
+    dhcp6: false
+    # mirror: br-user
+  enp3s0:
+    dhcp4: false
+    dhcp6: false
+    # mirror: br-admin
+  enp4s0:
+    dhcp4: false
+    dhcp6: false
+    # mirror: br-dmz
+  enp5s0:
+    dhcp4: false
+    dhcp6: false
+    # mirror: br-server trunk

@@ -19,6 +19,8 @@ init-harbor: ## Crée la VM Harbor - make init-harbor NAME=harbor-1 IP=10.0.110.
 	@./vm/registry/init.bash --domain-name $(NAME) --ip-address $(IP)
 init-opnsense: ## Crée la VM OPNsense (pare-feu/routeur) - make init-opnsense
 	@./vm/opnsense/init.bash
+init-selks: ## Crée la VM SELKS (IDS/NSM Suricata) sur br-server vlan40 + mirror OVS br-wan - make init-selks NAME=selks-1 IP=10.0.140.10/24
+	@./vm/selks/init.bash --domain-name $(NAME) --ip-address $(IP)
 init-traefik: ## Déploie le stack traefik sur le manager swarm - make init-traefik SWARM_IP=192.168.122.10
 	ssh admin@$(SWARM_IP) " \
 		sudo docker stack deploy -c /docker-compose-traefik.yml traefik \

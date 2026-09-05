@@ -4,7 +4,7 @@
   <system>
     <hostname>opnsense</hostname>
     <domain>horizon.fr</domain>
-    <group>
+    <group uuid="5770c607-7c72-4e54-8fe3-b87078a363d9">
       <name>admins</name>
       <description>System Administrators</description>
       <scope>system</scope>
@@ -12,11 +12,11 @@
       <member>0</member>
       <priv>page-all</priv>
     </group>
-    <user>
+    <user uuid="fd4fea57-7106-43b0-80e3-a921f2f8dd8b">
       <name>root</name>
       <descr>System Administrator</descr>
       <scope>system</scope>
-      <groupname>admins</groupname>
+      <group>admins</group>
       <password>${OPNSENSE_ADMIN_PASSWORD}</password>
       <uid>0</uid>
     </user>
@@ -26,7 +26,7 @@
   </system>
   <OPNsense>
     <Firewall>
-      <Alias>
+      <Alias version="1.0.1" description="Firewall aliases">
         <geoip>
           <url/>
         </geoip>
@@ -63,20 +63,20 @@
       <blockpriv>0</blockpriv>
       <blockbogons>1</blockbogons>
     </wan>
-    <opt1>
+    <opt3>
       <if>vtnet4</if>
       <descr>DMZ</descr>
       <enable>1</enable>
       <ipaddr>192.168.122.1</ipaddr>
       <subnet>27</subnet>
-    </opt1>
-    <opt7>
+    </opt3>
+    <opt1>
       <if>vtnet1</if>
       <descr>USER</descr>
       <enable>1</enable>
       <ipaddr>10.0.99.1</ipaddr>
       <subnet>24</subnet>
-    </opt7>
+    </opt1>
     <lan>
       <if>vtnet2</if>
       <descr>ADMIN</descr>
@@ -105,8 +105,15 @@
       <ipaddr>10.0.130.1</ipaddr>
       <subnet>24</subnet>
     </opt6>
+    <opt7>
+      <if>vtnet3_vlan40</if>
+      <descr>IDS</descr>
+      <enable>1</enable>
+      <ipaddr>10.0.140.1</ipaddr>
+      <subnet>24</subnet>
+    </opt7>
   </interfaces>
-  <vlans>
+  <vlans version="1.0.0" description="VLAN configuration">
     <vlan>
       <if>vtnet3</if>
       <tag>10</tag>
@@ -125,54 +132,175 @@
       <vlanif>vtnet3_vlan30</vlanif>
       <descr>SWARM</descr>
     </vlan>
+    <vlan>
+      <if>vtnet3</if>
+      <tag>40</tag>
+      <vlanif>vtnet3_vlan40</vlanif>
+      <descr>IDS</descr>
+    </vlan>
   </vlans>
-  <dhcpd>
-    <opt7>
-      <enable>1</enable>
-      <range>
-        <from>10.0.99.100</from>
-        <to>10.0.99.200</to>
-      </range>
-      <gateway>10.0.99.1</gateway>
-    </opt7>
-    <lan>
-      <enable>1</enable>
-      <range>
-        <from>10.0.100.100</from>
-        <to>10.0.100.200</to>
-      </range>
-      <gateway>10.0.100.1</gateway>
-    </lan>
-  </dhcpd>
+  <dnsmasq version="1.0.9" description="Dnsmasq DNS and DHCP">
+    <enable>1</enable>
+    <regdhcp>0</regdhcp>
+    <regdhcpstatic>0</regdhcpstatic>
+    <dhcpfirst>0</dhcpfirst>
+    <strict_order>0</strict_order>
+    <domain_needed>0</domain_needed>
+    <no_private_reverse>0</no_private_reverse>
+    <no_resolv>0</no_resolv>
+    <log_queries>0</log_queries>
+    <no_hosts>0</no_hosts>
+    <strictbind>0</strictbind>
+    <dnssec>0</dnssec>
+    <regdhcpdomain/>
+    <interface>lan</interface>
+    <port>53053</port>
+    <dns_forward_max/>
+    <cache_size/>
+    <local_ttl/>
+    <add_mac/>
+    <add_subnet>0</add_subnet>
+    <strip_subnet>0</strip_subnet>
+    <dhcp>
+      <no_interface/>
+      <fqdn>1</fqdn>
+      <domain/>
+      <local>1</local>
+      <lease_max/>
+      <authoritative>0</authoritative>
+      <default_fw_rules>1</default_fw_rules>
+      <reply_delay/>
+      <enable_ra>0</enable_ra>
+      <host_ping>1</host_ping>
+      <nosync>0</nosync>
+      <log_dhcp>0</log_dhcp>
+      <log_quiet>0</log_quiet>
+    </dhcp>
+    <no_ident>1</no_ident>
+    <dhcp_ranges uuid="1a2b3c4d-1111-4a11-8a11-100000000001">
+      <interface>lan</interface>
+      <set_tag/>
+      <start_addr>10.0.100.100</start_addr>
+      <end_addr>10.0.100.200</end_addr>
+      <subnet_mask/>
+      <constructor/>
+      <mode/>
+      <prefix_len/>
+      <lease_time/>
+      <domain_type>range</domain_type>
+      <domain/>
+      <nosync>0</nosync>
+      <ra_mode/>
+      <ra_priority/>
+      <ra_mtu/>
+      <ra_interval/>
+      <ra_router_lifetime/>
+      <description>ADMIN</description>
+    </dhcp_ranges>
+    <dhcp_ranges uuid="1a2b3c4d-2222-4a11-8a11-100000000002">
+      <interface>opt1</interface>
+      <set_tag/>
+      <start_addr>10.0.99.100</start_addr>
+      <end_addr>10.0.99.200</end_addr>
+      <subnet_mask/>
+      <constructor/>
+      <mode/>
+      <prefix_len/>
+      <lease_time/>
+      <domain_type>range</domain_type>
+      <domain/>
+      <nosync>0</nosync>
+      <ra_mode/>
+      <ra_priority/>
+      <ra_mtu/>
+      <ra_interval/>
+      <ra_router_lifetime/>
+      <description>USER</description>
+    </dhcp_ranges>
+  </dnsmasq>
   <nat>
     <outbound>
       <mode>automatic</mode>
     </outbound>
-    <rule>
+    <rule uuid="eb227843-d0ff-4793-9f14-8b79fbb8e1d7">
+      <sequence>100</sequence>
+      <disabled>0</disabled>
+      <nordr>0</nordr>
       <interface>wan</interface>
+      <ipprotocol/>
       <protocol>tcp</protocol>
-      <source><any>1</any></source>
+      <source>
+        <network/>
+        <port/>
+        <not>0</not>
+      </source>
       <destination>
         <network>wanip</network>
         <port>80</port>
+        <not>0</not>
       </destination>
       <target>192.168.122.13</target>
       <local-port>80</local-port>
+      <poolopts/>
+      <log>0</log>
+      <category/>
       <descr>DNAT HTTP - swarm VIP</descr>
+      <tag/>
+      <tagged/>
+      <nosync>0</nosync>
+      <natreflection/>
+      <pass/>
       <associated-rule-id>nat_80</associated-rule-id>
+      <created>
+        <username/>
+        <time/>
+        <description/>
+      </created>
+      <updated>
+        <username/>
+        <time/>
+        <description/>
+      </updated>
     </rule>
-    <rule>
+    <rule uuid="88deef91-08ed-40b3-b3ef-4002c451237f">
+      <sequence>200</sequence>
+      <disabled>0</disabled>
+      <nordr>0</nordr>
       <interface>wan</interface>
+      <ipprotocol/>
       <protocol>tcp</protocol>
-      <source><any>1</any></source>
+      <source>
+        <network/>
+        <port/>
+        <not>0</not>
+      </source>
       <destination>
         <network>wanip</network>
         <port>443</port>
+        <not>0</not>
       </destination>
       <target>192.168.122.13</target>
       <local-port>443</local-port>
+      <poolopts/>
+      <log>0</log>
+      <category/>
       <descr>DNAT HTTPS - swarm VIP</descr>
+      <tag/>
+      <tagged/>
+      <nosync>0</nosync>
+      <natreflection/>
+      <pass/>
       <associated-rule-id>nat_443</associated-rule-id>
+      <created>
+        <username/>
+        <time/>
+        <description/>
+      </created>
+      <updated>
+        <username/>
+        <time/>
+        <description/>
+      </updated>
     </rule>
   </nat>
   <filter>
@@ -199,6 +327,19 @@
         <port>443</port>
       </destination>
       <descr>Allow forwarded HTTPS to swarm VIP</descr>
+    </rule>
+    <!-- TEMPORAIRE : accès direct au webGUI depuis le WAN, le temps de
+         configurer WireGuard. À retirer une fois le VPN opérationnel. -->
+    <rule>
+      <type>pass</type>
+      <interface>wan</interface>
+      <protocol>tcp</protocol>
+      <source><any>1</any></source>
+      <destination>
+        <network>wanip</network>
+        <port>443</port>
+      </destination>
+      <descr>TEMP - Allow WAN to webGUI (remove after WireGuard setup)</descr>
     </rule>
     <rule>
       <type>block</type>
@@ -257,7 +398,7 @@
       <interface>lan</interface>
       <ipprotocol>inet</ipprotocol>
       <source><network>lan</network></source>
-      <destination><network>opt7</network></destination>
+      <destination><network>opt1</network></destination>
       <descr>Allow ADMIN - USER (br-user)</descr>
     </rule>
     <rule>
@@ -289,7 +430,15 @@
       <interface>lan</interface>
       <ipprotocol>inet</ipprotocol>
       <source><network>lan</network></source>
-      <destination><network>opt1</network></destination>
+      <destination><network>opt7</network></destination>
+      <descr>Allow ADMIN - IDS (br-server)</descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>lan</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>lan</network></source>
+      <destination><network>opt3</network></destination>
       <descr>Allow ADMIN - DMZ (br-dmz)</descr>
     </rule>
     <rule>
@@ -330,13 +479,29 @@
       <ipprotocol>inet</ipprotocol>
       <source><network>opt7</network></source>
       <destination><network>private_networks</network></destination>
-      <descr>Block USER - private_networks </descr>
+      <descr>Block IDS - private_networks</descr>
     </rule>
     <rule>
       <type>pass</type>
       <interface>opt7</interface>
       <ipprotocol>inet</ipprotocol>
       <source><network>opt7</network></source>
+      <destination><any>1</any></destination>
+      <descr>Allow IDS to WAN</descr>
+    </rule>
+    <rule>
+      <type>block</type>
+      <interface>opt1</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>opt1</network></source>
+      <destination><network>private_networks</network></destination>
+      <descr>Block USER - private_networks </descr>
+    </rule>
+    <rule>
+      <type>pass</type>
+      <interface>opt1</interface>
+      <ipprotocol>inet</ipprotocol>
+      <source><network>opt1</network></source>
       <destination><any>1</any></destination>
       <descr>Allow USER (br-user)  to WAN</descr>
     </rule>

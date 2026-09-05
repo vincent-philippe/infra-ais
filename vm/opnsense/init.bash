@@ -90,7 +90,7 @@ sudo virt-install \
   --import \
   --noautoconsole
 
-br_server_set_vlan opnsense 10,20,30
+br_server_set_vlan opnsense 10,20,30,40
 
 # disabled: the automated expect-driven console interaction was unreliable
 # over this host's SOL access and kept wedging the shared console session.

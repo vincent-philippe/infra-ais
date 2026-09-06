@@ -33,6 +33,8 @@ fi
 
 echo "Starting backup of pool: ${POOL}"
 
+FAILED=0
+
 IMAGES=$(rbd --id "${CEPH_USER}" ls "${POOL}")
 if [ $? -ne 0 ]; then
     echo "Error: Failed to list images in pool ${POOL}"
@@ -52,6 +54,7 @@ for IMAGE in ${IMAGES}; do
         rbd --id "${CEPH_USER}" --no-progress snap rm "${SNAPSHOT}"
         if [ $? -ne 0 ]; then
             echo "Error: Failed to delete existing snapshot ${SNAPSHOT_NAME} for ${IMAGE}. Skipping backup."
+            FAILED=1
             continue
         fi
     fi
@@ -60,6 +63,7 @@ for IMAGE in ${IMAGES}; do
     rbd --id "${CEPH_USER}" --no-progress snap create "${POOL}/${IMAGE}@${SNAPSHOT_NAME}"
     if [ $? -ne 0 ]; then
         echo "Error: Failed to create snapshot ${SNAPSHOT_NAME} for ${IMAGE}"
+        FAILED=1
         continue
     fi
 
@@ -71,6 +75,7 @@ for IMAGE in ${IMAGES}; do
     if [ $? -ne 0 ]; then
         echo "Error: Export failed for ${IMAGE}"
         rm -rf "${TMP_DIR}"
+        FAILED=1
         continue
     fi
 
@@ -80,13 +85,15 @@ for IMAGE in ${IMAGES}; do
                 "${BORG_REPO}::${ARCHIVE}" - < "${TMP_EXPORT}"
         if [ $? -ne 0 ]; then
             echo "Error: Backup failed for ${IMAGE} on ${BORG_REPO}"
+            FAILED=1
             continue
         fi
 
         echo "Checking archive integrity for ${ARCHIVE} on ${BORG_REPO}"
-        borg check "${BORG_REPO}::${ARCHIVE}"
+        borg check "${BORG_REPO}::${ARCHIVE}" --verify-data
         if [ $? -ne 0 ]; then
             echo "Error: integrity check failed for ${IMAGE} on ${BORG_REPO} (archive ${ARCHIVE}) — treating this backup as unusable"
+            FAILED=1
             continue
         fi
 
@@ -95,6 +102,7 @@ for IMAGE in ${IMAGES}; do
                 --keep-hourly=2 --keep-daily=1 --keep-weekly=2
         if [ $? -ne 0 ]; then
             echo "Error: Failed to prune borg repo ${BORG_REPO} for ${IMAGE}"
+            FAILED=1
         fi
     done
 
@@ -104,12 +112,18 @@ for IMAGE in ${IMAGES}; do
     rbd --id "${CEPH_USER}" --no-progress snap rm "${POOL}/${IMAGE}@${SNAPSHOT_NAME}"
     if [ $? -ne 0 ]; then
         echo "Error: Failed to delete snapshot for ${IMAGE}"
+        FAILED=1
         continue
     fi
 
     echo "Backup completed for ${IMAGE}"
 
 done
+
+if [ "${FAILED}" -ne 0 ]; then
+    echo "Backup of pool ${POOL} completed with errors."
+    exit 1
+fi
 
 echo "Backup of pool ${POOL} completed successfully."
 

@@ -12,7 +12,7 @@ chpasswd:
   users:
     - name: admin
       password: ${CONSOLE_ADMIN_PASSWORD}
-      type: text
+      type: hash
 package_update: true
 packages:
   - docker.io

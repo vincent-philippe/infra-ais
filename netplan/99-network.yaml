@@ -17,10 +17,18 @@ network:
       macaddress: 16:0c:55:5d:9f:82
     br-user:
       dhcp4: false
+      dhcp6: false
       openvswitch: {}
     # 10.0.100.0/24 gateway is OPNsense's ADMIN leg (10.0.100.1)
     br-admin:
-      dhcp4: true
+      dhcp4: false
+      dhcp6: false
+      addresses: [10.0.100.2/24]
+      routes:
+        - to: default
+          via: 10.0.100.1
+      nameservers:
+        addresses: [10.0.100.1]
       openvswitch: {}
     # 192.168.122.0/27 gateway is OPNsense's DMZ leg (192.168.122.1)
     br-dmz:

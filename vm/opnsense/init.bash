@@ -74,7 +74,7 @@ source "$DIR/../bridge/br-server.bash"
 sudo virt-install \
   --name opnsense \
   --ram 4096 \
-  --vcpus 2 \
+  --vcpus 4 \
   --os-variant freebsd14.0 \
   --disk /var/lib/libvirt/images/OPNsense-26.7-serial-amd64.img,format=raw,bus=sata \
   --disk pool=default,size=20,format=qcow2,bus=virtio \

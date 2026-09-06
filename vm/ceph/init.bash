@@ -71,7 +71,7 @@ qemu-img create -f qcow2 -F qcow2 \
   "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" 20G
 
 # Disque OSD dédié
-qemu-img create -f qcow2 /var/lib/libvirt/images/$DOMAIN_NAME-osd.qcow2 300G
+qemu-img create -f qcow2 /var/lib/libvirt/images/$DOMAIN_NAME-osd.qcow2 220G
 
 # Le bridge pour le network cluster (heartbeat -> synchro -> backup sur un réseau séparé)
 
@@ -85,7 +85,7 @@ source "$DIR/../../bridge/br-server.bash"
 
 virt-install \
   --name "$DOMAIN_NAME" \
-  --ram 4096 --vcpus 2 \
+  --ram 6144 --vcpus 4 \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME-osd.qcow2" \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME.iso,device=cdrom" \

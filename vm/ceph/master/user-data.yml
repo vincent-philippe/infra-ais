@@ -35,18 +35,15 @@ runcmd:
   - cephadm shell -- ceph osd pool create docker-pool 32 32 replicated
   - cephadm shell -- ceph osd pool set docker-pool pg_autoscale_mode on
   - cephadm shell -- ceph osd pool application enable docker-pool rbd
+  - cephadm shell -- ceph osd pool set-quota docker-pool max_bytes 53687091200 # 50G
   - cephadm shell --mount /etc/ceph:/etc/ceph -- ceph auth get-or-create client.docker
     mon 'allow r'
     osd 'profile rbd pool=docker-pool'
     -o /etc/ceph/ceph.client.docker.keyring
   - cephadm shell -- ceph osd pool create backup-pool 32 32 replicated
-  # size=2, not the cluster default of 3: raw OSD capacity is tight (300G/node,
-  # 3 nodes targeted) and already shared with docker-pool, so a 3x-replicated
-  # 300G quota alone could saturate the cluster
-  - cephadm shell -- ceph osd pool set backup-pool size 2
   - cephadm shell -- ceph osd pool set backup-pool pg_autoscale_mode on
   - cephadm shell -- ceph osd pool application enable backup-pool rbd
-  - cephadm shell -- ceph osd pool set-quota backup-pool max_bytes 322122547200 # 300G
+  - cephadm shell -- ceph osd pool set-quota backup-pool max_bytes 128849018880 # 120G
   - cephadm shell --mount /etc/ceph:/etc/ceph -- ceph auth get-or-create client.backup
     mon 'allow r'
     osd 'profile rbd pool=backup-pool'

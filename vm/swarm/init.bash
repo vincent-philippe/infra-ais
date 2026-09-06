@@ -89,14 +89,14 @@ echo "[virt] creating the disk for this vm based on debian 13"
 
 qemu-img create -f qcow2 -F qcow2 \
   -b /var/lib/libvirt/images/debian-13-generic-amd64.qcow2 \
-  "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" 20G
+  "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" 40G
 
 source "$DIR/../../bridge/br-server.bash"
 
 virt-install \
   --name "$DOMAIN_NAME" \
-  --memory 4000 \
-  --vcpus 2 \
+  --memory 4096 \
+  --vcpus 4 \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME-debian-13-generic-amd64.qcow2" \
   --disk "/var/lib/libvirt/images/$DOMAIN_NAME.iso,device=cdrom" \
   --network bridge=br-dmz,virtualport_type=openvswitch \
